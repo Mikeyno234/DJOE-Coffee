@@ -36,10 +36,7 @@ export async function POST(request: Request) {
       const passHash = foundUser.password_hash;
       const isValidPass =
         passHash === hashedPassword ||
-        passHash === trimmedPassword ||
-        (trimmedEmail === "superadmin@kedaikopi.com" && (trimmedPassword === "superadmin" || trimmedPassword === "super123")) ||
-        (trimmedEmail === "admin@kedaikopi.com" && (trimmedPassword === "admin" || trimmedPassword === "admin123")) ||
-        (trimmedEmail === "kasir@kedaikopi.com" && (trimmedPassword === "kasir" || trimmedPassword === "kasir123"));
+        passHash === trimmedPassword;
 
       if (!isValidPass) {
         return NextResponse.json({ success: false, error: "Kata sandi yang Anda masukkan salah. Silakan coba lagi!" }, { status: 401 });
