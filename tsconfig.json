@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
+    "baseUrl": ".",
     "incremental": true,
     "plugins": [
       {
@@ -32,3 +33,4 @@
   ],
   "exclude": ["node_modules"]
 }
+
