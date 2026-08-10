@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  TagIcon,
   PlusIcon,
   PencilSquareIcon,
   TrashIcon,
-  SparklesIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { ConfirmModal } from "./ConfirmModal";
 import { Toast, ToastMessage } from "./Toast";
@@ -54,6 +53,7 @@ export const CategoryManagementView: React.FC = () => {
     } finally {
       setLoading(false);
     }
+
   };
 
   useEffect(() => {
@@ -78,42 +78,49 @@ export const CategoryManagementView: React.FC = () => {
 
   const handleSaveCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return showToast("error", "Nama kategori wajib diisi!");
+
+    if (!name.trim()) {
+      showToast("error", "Nama kategori wajib diisi.");
+      return;
+    }
 
     try {
+      const payload = {
+        name,
+        bg_color: bgColor,
+        fg_color: fgColor,
+      };
+
+      let res;
       if (editingId) {
-        // Edit category
-        const res = await fetch(`/api/categories/${editingId}`, {
+        res = await fetch(`/api/categories/${editingId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, bg_color: bgColor, fg_color: fgColor }),
+          body: JSON.stringify(payload),
         });
-        const json = await res.json();
-        if (json.success) {
-          showToast("success", `Kategori "${name}" berhasil diperbarui!`);
-          setIsModalOpen(false);
-          fetchCategories();
-        } else {
-          showToast("error", json.error || "Gagal memperbarui kategori.");
-        }
       } else {
-        // Add category
-        const res = await fetch("/api/categories", {
+        res = await fetch("/api/categories", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, bg_color: bgColor, fg_color: fgColor }),
+          body: JSON.stringify(payload),
         });
-        const json = await res.json();
-        if (json.success) {
-          showToast("success", `Kategori "${name}" berhasil ditambahkan!`);
-          setIsModalOpen(false);
-          fetchCategories();
-        } else {
-          showToast("error", json.error || "Gagal menambahkan kategori.");
-        }
+      }
+
+      const json = await res.json();
+      if (json.success) {
+        showToast(
+          "success",
+          editingId
+            ? `Kategori "${name}" berhasil diperbarui.`
+            : `Kategori baru "${name}" berhasil ditambahkan.`
+        );
+        setIsModalOpen(false);
+        fetchCategories();
+      } else {
+        showToast("error", json.error || "Gagal menyimpan kategori.");
       }
     } catch {
-      showToast("error", "Terjadi kesalahan sistem saat menyimpan kategori.");
+      showToast("error", "Terjadi kesalahan sistem saat menyimpan.");
     }
   };
 
@@ -139,72 +146,60 @@ export const CategoryManagementView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-5xl mx-auto">
+    <div className="space-y-4 animate-fade-in max-w-5xl mx-auto">
       {/* Toast Notification */}
       <Toast toast={toast} onClose={() => setToast(null)} />
 
-      {/* Header Banner */}
-      <div className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200 shadow-xl flex flex-wrap justify-between items-center gap-4">
-        <div>
-          <h2 className="text-xl font-black text-[#543A14] flex items-center gap-2">
-            <TagIcon className="w-6 h-6 text-[#543A14]" />
-            <span>Master Data Kategori Menu</span>
-          </h2>
-          <p className="text-xs text-stone-500 mt-1">
-            Kelola master kategori menu kopi & makanan yang terintegrasi dengan database Supabase m_categories.
-          </p>
-        </div>
-
+      {/* Action Header */}
+      <div className="flex justify-end">
         <button
           onClick={handleOpenAddModal}
-          className="px-4 py-2.5 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg cursor-pointer transition-all flex items-center gap-2 active:scale-95 transform hover:-translate-y-0.5"
+          className="px-3.5 py-2 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] font-bold text-xs rounded-xl shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 active:scale-[0.98]"
         >
           <PlusIcon className="w-4 h-4 text-[#F0BB78]" />
-          <span>Tambah Kategori Baru</span>
+          <span>TAMBAH KATEGORI BARU</span>
         </button>
       </div>
 
-
       {/* Categories Table Card */}
-      <div className="bg-white rounded-3xl border border-stone-200 shadow-xl overflow-hidden">
+      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-xs font-bold text-stone-400 animate-pulse">
+          <div className="p-12 text-center text-xs font-semibold text-stone-400 animate-pulse">
             Memuat data master kategori dari Supabase...
           </div>
         ) : categories.length === 0 ? (
-          <div className="p-12 text-center text-xs font-semibold text-stone-500">
+          <div className="p-12 text-center text-xs font-medium text-stone-500">
             Belum ada data kategori menu. Klik tombol di atas untuk menambah kategori.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="bg-[#543A14] text-amber-100 font-extrabold uppercase tracking-wider text-[11px]">
-                  <th className="p-4 rounded-tl-3xl">ID</th>
-                  <th className="p-4">Nama Kategori</th>
-                  <th className="p-4">Preview Badge</th>
-                  <th className="p-4">Tanggal Dibuat</th>
-                  <th className="p-4 text-center rounded-tr-3xl">Aksi</th>
+                <tr className="bg-stone-50 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider">
+                  <th className="p-3.5 pl-5">ID</th>
+                  <th className="p-3.5">Nama Kategori</th>
+                  <th className="p-3.5">Preview Badge</th>
+                  <th className="p-3.5">Tanggal Dibuat</th>
+                  <th className="p-3.5 text-center pr-5">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100 font-medium text-stone-700">
+              <tbody className="divide-y divide-stone-100 font-medium text-stone-900">
                 {categories.map((cat) => (
-                  <tr key={cat.id} className="hover:bg-stone-50/80 transition-colors">
-                    <td className="p-4 font-extrabold text-[#543A14]">#{cat.id}</td>
-                    <td className="p-4 font-black text-stone-900 text-sm">{cat.name}</td>
-                    <td className="p-4">
+                  <tr key={cat.id} className="hover:bg-stone-50/70 transition-colors">
+                    <td className="p-3.5 pl-5 font-mono text-stone-500">#{cat.id}</td>
+                    <td className="p-3.5 font-bold text-stone-900">{cat.name}</td>
+                    <td className="p-3.5">
                       <span
-                        className="px-3 py-1 rounded-full text-xs font-bold shadow-xs inline-flex items-center gap-1.5"
                         style={{
                           backgroundColor: cat.bg_color || "#e8d5be",
                           color: cat.fg_color || "#6b3a1f",
                         }}
+                        className="px-2.5 py-1 rounded-md text-[11px] font-semibold inline-block border border-stone-200"
                       >
-                        <SparklesIcon className="w-3.5 h-3.5" />
-                        <span>{cat.name}</span>
+                        {cat.name}
                       </span>
                     </td>
-                    <td className="p-4 text-stone-500">
+                    <td className="p-3.5 text-stone-500">
                       {cat.created_at
                         ? new Date(cat.created_at).toLocaleDateString("id-ID", {
                             day: "numeric",
@@ -213,19 +208,18 @@ export const CategoryManagementView: React.FC = () => {
                           })
                         : "-"}
                     </td>
-                    <td className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-1">
+                    <td className="p-3.5 text-center pr-5">
+                      <div className="flex items-center justify-center gap-1.5">
                         <button
                           onClick={() => handleOpenEditModal(cat)}
-                          className="p-2 text-amber-900 hover:bg-amber-100 rounded-xl cursor-pointer transition-colors"
+                          className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
                           title="Edit Kategori"
                         >
                           <PencilSquareIcon className="w-4 h-4" />
                         </button>
-
                         <button
                           onClick={() => setDeleteTarget(cat)}
-                          className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl cursor-pointer transition-colors"
+                          className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                           title="Hapus Kategori"
                         >
                           <TrashIcon className="w-4 h-4" />
@@ -242,91 +236,85 @@ export const CategoryManagementView: React.FC = () => {
 
       {/* Add / Edit Category Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-[#1E3932]/75 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4 border border-[#cba258]/30 animate-scale-in relative max-h-[90vh] overflow-y-auto my-auto">
-            <h3 className="text-base font-black text-[#1E3932] flex items-center gap-2 border-b border-stone-100 pb-3">
-              <TagIcon className="w-5 h-5 text-[#006241]" />
-              <span>{editingId ? "Edit Kategori Menu" : "Tambah Kategori Baru"}</span>
-            </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1a0f07]/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <h3 className="text-base font-bold text-stone-900">
+                {editingId ? "Edit Kategori Menu" : "Tambah Kategori Baru"}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
 
-            <form onSubmit={handleSaveCategory} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveCategory} className="space-y-4">
               <div>
-                <label className="font-bold text-stone-700 block mb-1">Nama Kategori</label>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  Nama Kategori
+                </label>
                 <input
                   type="text"
                   required
-                  placeholder="Contoh: Milk Based / Dessert"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#006241]"
+                  placeholder="Contoh: Cold Brew"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Warna Background</label>
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="color"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="w-9 h-9 p-0.5 rounded-lg cursor-pointer border border-stone-300"
-                    />
-                    <input
-                      type="text"
-                      value={bgColor}
-                      onChange={(e) => setBgColor(e.target.value)}
-                      className="w-full px-2.5 py-1.5 border border-stone-300 rounded-lg text-xs font-mono"
-                    />
-                  </div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    Warna Background
+                  </label>
+                  <input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-stone-300 cursor-pointer p-0.5"
+                  />
                 </div>
-
                 <div>
-                  <label className="font-bold text-stone-700 block mb-1">Warna Teks</label>
-                  <div className="flex gap-2 items-center">
-                    <input
-                      type="color"
-                      value={fgColor}
-                      onChange={(e) => setFgColor(e.target.value)}
-                      className="w-9 h-9 p-0.5 rounded-lg cursor-pointer border border-stone-300"
-                    />
-                    <input
-                      type="text"
-                      value={fgColor}
-                      onChange={(e) => setFgColor(e.target.value)}
-                      className="w-full px-2.5 py-1.5 border border-stone-300 rounded-lg text-xs font-mono"
-                    />
-                  </div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    Warna Teks
+                  </label>
+                  <input
+                    type="color"
+                    value={fgColor}
+                    onChange={(e) => setFgColor(e.target.value)}
+                    className="w-full h-9 rounded-xl border border-stone-300 cursor-pointer p-0.5"
+                  />
                 </div>
               </div>
 
-              {/* Preview Badge */}
-              <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200 space-y-1">
-                <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
-                  Preview Badge Tampilan
+              <div className="p-3 rounded-xl bg-stone-50 border border-stone-200/80 space-y-1">
+                <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider block">
+                  Preview Tampilan Badge
                 </span>
                 <span
-                  className="px-3 py-1 rounded-full text-xs font-bold inline-flex items-center gap-1.5 shadow-xs"
                   style={{ backgroundColor: bgColor, color: fgColor }}
+                  className="px-3 py-1 rounded-md text-xs font-bold inline-block"
                 >
-                  <SparklesIcon className="w-3.5 h-3.5" />
-                  <span>{name || "Nama Kategori"}</span>
+                  {name || "Preview Nama Kategori"}
                 </span>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-100">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-stone-300 rounded-xl font-bold text-stone-600 hover:bg-stone-100 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-[#006241] hover:bg-[#1E3932] text-white rounded-xl font-black shadow-md cursor-pointer transition-all active:scale-95"
+                  className="px-4 py-2 rounded-xl bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold cursor-pointer transition-all active:scale-[0.98]"
                 >
-                  Simpan Kategori
+                  {editingId ? "Simpan Perubahan" : "Tambah Kategori"}
                 </button>
               </div>
             </form>
@@ -336,10 +324,15 @@ export const CategoryManagementView: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       <ConfirmModal
-        isOpen={Boolean(deleteTarget)}
-        title="Hapus Kategori Menu?"
-        message={`Apakah Anda yakin ingin menghapus kategori "${deleteTarget?.name}"? Tindakan ini tidak dapat dibatalkan.`}
-        confirmText="Ya, Hapus Kategori"
+        isOpen={!!deleteTarget}
+        title="Konfirmasi Hapus Kategori"
+        message={
+          deleteTarget
+            ? `Apakah Anda yakin ingin menghapus kategori "${deleteTarget.name}"?`
+            : ""
+        }
+        confirmText="Ya, Hapus Sekarang"
+        cancelText="Batal"
         onConfirm={handleDeleteConfirm}
         onClose={() => setDeleteTarget(null)}
       />

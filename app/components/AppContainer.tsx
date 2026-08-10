@@ -23,11 +23,21 @@ interface AppContainerProps {
 }
 
 export default function AppContainer({ activeRoute = "pos" }: AppContainerProps) {
-  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
   const showToast = (type: "success" | "error" | "info", text: string) => {
-    setToast({ id: String(Date.now()), type, text });
+    const newToast: ToastMessage = { id: String(Date.now() + Math.random()), type, text };
+    setToasts((prev) => [newToast, ...prev.slice(0, 4)]);
   };
+
+  const handleCloseToast = (id?: string) => {
+    if (id) {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    } else {
+      setToasts([]);
+    }
+  };
+
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<{
@@ -45,14 +55,12 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
   }, [activeRoute]);
 
 
-  // State
   const [menus, setMenus] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
   const [cart, setCart] = useState<{ id: string; name: string; price: number; hpp: number; qty: number }[]>([]);
   const [cashInput, setCashInput] = useState<string>("");
   const [selectedCat, setSelectedCat] = useState<string>("Semua");
 
-  // Calculator Form State
   const [formMenuName, setFormMenuName] = useState("");
   const [formCategory, setFormCategory] = useState("Minuman");
   const [formMargin, setFormMargin] = useState(70);
@@ -67,13 +75,11 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
     { name: "Tutup", cost: 300 },
   ]);
 
-  // Print Modal & Export State
   const [receiptTx, setReceiptTx] = useState<any>(null);
   const [printSize, setPrintSize] = useState<"58" | "80" | "a4">("58");
   const [exportType, setExportType] = useState<"catalogue" | "hpp_report">("hpp_report");
-
-  // Store Config State
   const [storeConfig, setStoreConfig] = useState<any>(null);
+
 
 
   useEffect(() => {
@@ -345,7 +351,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#f2f0eb] text-[#1a0f07]">
-      {/* Sidebar Navigation */}
       <SidebarNav
         currentUser={currentUser}
         activeTab={activeTab}
@@ -353,7 +358,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
         onLogout={handleLogout}
       />
 
-      {/* Main Content Workspace */}
       <main className="flex-1 w-full mx-auto p-4 md:p-6 lg:p-8 pb-20 lg:pb-8 space-y-6 overflow-x-hidden">
         {activeTab === "dash" && hasAccess("dash") && (
           <DashboardView
@@ -405,21 +409,24 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
             handleSaveMenu={handleSaveMenu}
             onShowToast={showToast}
           />
-
         )}
-
 
         {activeTab === "list" && hasAccess("list") && (
           <MenuListView
             menus={menus}
             onAddNewMenu={() => setActiveTab("calc")}
-            onEditMenu={handleEditMenu}
+            onUpdateMenu={(updated) => {
+              setMenus((prev) =>
+                prev.map((m) => (String(m.id) === String(updated.id) ? { ...m, ...updated } : m))
+              );
+              fetchAnalytics();
+            }}
             onDeleteMenu={handleDeleteMenu}
             onPrintCatalogue={handlePrintCatalogue}
             onPrintHppReport={handlePrintHppReport}
+            onShowToast={showToast}
           />
         )}
-
 
         {activeTab === "categories" && hasAccess("categories") && (
           <CategoryManagementView />
@@ -429,14 +436,11 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
           <UserManagementView currentUser={currentUser} />
         )}
 
-
         {activeTab === "profile" && (
-          <UserProfileView currentUser={currentUser} onLogout={handleLogout} />
+          <UserProfileView currentUser={currentUser} onLogout={handleLogout} onShowToast={showToast} />
         )}
       </main>
 
-
-      {/* Thermal Print Receipt Modal */}
       <ReceiptModal
         receiptTx={receiptTx}
         storeConfig={storeConfig}
@@ -445,11 +449,9 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
         onClose={() => setReceiptTx(null)}
       />
 
-      {/* Hidden A4 Print Area */}
       {!receiptTx && (
         <div id="printArea" className="hidden">
           {exportType === "catalogue" ? (
-            /* 1. Customer Catalogue (Privasi HPP & Margin Terjaga) */
             <>
               <h2 style={{ marginBottom: "0.2rem", fontWeight: "bold", fontSize: "1.3rem" }}>
                 Katalog Menu & Daftar Harga - {storeConfig?.store_name || "Kedai Kopi"}
@@ -504,12 +506,10 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
                 </tbody>
               </table>
             </>
-
           ) : (
-            /* 2. Internal HPP & Financial Margin Report */
             <>
               <h2 style={{ marginBottom: "0.2rem", fontWeight: "bold", fontSize: "1.3rem" }}>
-                Laporan Internal HPP & Profitabilitas Menu - {storeConfig?.store_name || "Kedai Kopi"}
+                Export Laporan Internal & Profitabilitas Menu - {storeConfig?.store_name || "Kedai Kopi"}
               </h2>
 
               <p style={{ color: "#666", fontSize: "0.85rem", marginBottom: "1rem" }}>
@@ -549,10 +549,11 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
         </div>
       )}
 
-      {/* Toast Notification Container */}
-      <Toast toast={toast} onClose={() => setToast(null)} />
+      <Toast toasts={toasts} onClose={handleCloseToast} />
     </div>
   );
 }
+
+
 
 

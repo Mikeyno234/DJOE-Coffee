@@ -41,6 +41,7 @@ export async function PUT(request: Request) {
     const res = AuthService.updateUser(userId, {
       name: body.name,
       password: body.password,
+      avatar_url: body.avatar_url,
     });
 
     if (!res.success) {
@@ -50,6 +51,7 @@ export async function PUT(request: Request) {
     const numericId = Number(userId);
     const updatePayload: any = {
       name: body.name,
+      avatar_url: body.avatar_url,
       updated_by: isNaN(numericId) ? 1 : numericId,
       updated_at: new Date().toISOString(),
     };
@@ -58,11 +60,12 @@ export async function PUT(request: Request) {
       updatePayload.password_hash = AuthService.hashPassword(body.password.trim());
     }
 
-    // Update password_hash in Supabase m_users
+    // Update password_hash & avatar_url in Supabase m_users
     await supabase
       .from("m_users")
       .update(updatePayload)
       .eq("id", isNaN(numericId) ? userId : numericId);
+
 
     return NextResponse.json({ success: true, user: res.user });
   } catch (err: any) {

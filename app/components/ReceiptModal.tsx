@@ -69,8 +69,8 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         <div className="bg-white rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4 border border-[#cba258]/30 animate-scale-in relative max-h-[90vh] overflow-y-auto my-auto">
           {/* Header Controls */}
           <div className="flex justify-between items-center border-b border-stone-200 pb-3">
-            <h3 className="font-black text-xs text-[#1E3932] flex items-center gap-2">
-              <PrinterIcon className="w-4 h-4 text-[#006241]" />
+            <h3 className="font-black text-xs text-[#543A14] flex items-center gap-2">
+              <PrinterIcon className="w-4 h-4 text-[#543A14]" />
               <span>Preview Struk Kasir Thermal</span>
             </h3>
             <div className="flex gap-1 bg-stone-100 p-1 rounded-xl">
@@ -79,7 +79,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                   key={sz}
                   onClick={() => setPrintSize(sz)}
                   className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold cursor-pointer transition-all ${
-                    printSize === sz ? "bg-[#006241] text-white shadow-sm" : "text-stone-600 hover:text-stone-900"
+                    printSize === sz ? "bg-[#543A14] text-[#F0BB78] shadow-sm" : "text-stone-600 hover:text-stone-900"
                   }`}
                 >
                   {sz}mm
@@ -87,6 +87,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
               ))}
             </div>
           </div>
+
 
           {btStatus && (
             <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] font-semibold animate-slide-up">
@@ -173,11 +174,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
 
               <button
                 onClick={handlePrint}
-                className="flex-1 py-2.5 bg-[#006241] hover:bg-[#1E3932] text-white rounded-2xl font-black text-xs shadow-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 active:scale-95 transform hover:-translate-y-0.5"
+                className="flex-1 py-2.5 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] rounded-2xl font-black text-xs shadow-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 active:scale-95 transform hover:-translate-y-0.5"
               >
-                <PrinterIcon className="w-4 h-4 text-amber-300" />
+                <PrinterIcon className="w-4 h-4 text-[#F0BB78]" />
                 <span>Cetak Standard</span>
               </button>
+
             </div>
 
             <button

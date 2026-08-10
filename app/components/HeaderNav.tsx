@@ -22,7 +22,9 @@ interface HeaderNavProps {
     email: string;
     role: "SUPER_ADMIN" | "ADMIN" | "CASHIER";
     permissions: TabPermission[];
+    avatar_url?: string;
   };
+
   activeTab: "dash" | "pos" | "calc" | "list" | "users";
   setActiveTab: (tab: "dash" | "pos" | "calc" | "list" | "users") => void;
   onLogout: () => void;
@@ -66,9 +68,18 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
 
         {/* User Badge, Role Indicator & Logout Button */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 bg-[#6e4b1b]/70 px-3 py-1.5 rounded-2xl border border-amber-500/30 text-xs shadow-inner">
-            <UserIcon className="w-4 h-4 text-amber-300" />
+          <div className="flex items-center gap-2 bg-[#6e4b1b]/70 px-3 py-1.5 rounded-2xl text-xs shadow-inner">
+            {currentUser.avatar_url ? (
+              <img
+                src={currentUser.avatar_url}
+                alt={currentUser.name}
+                className="w-5 h-5 rounded-full object-cover border border-amber-300/60"
+              />
+            ) : (
+              <UserIcon className="w-4 h-4 text-amber-300" />
+            )}
             <span className="font-semibold text-amber-50">{currentUser.name}</span>
+
             <span
               className={`px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider uppercase flex items-center gap-1 shadow-sm ${
                 currentUser.role === "SUPER_ADMIN"

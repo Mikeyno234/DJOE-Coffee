@@ -9,11 +9,13 @@ export interface User {
   password_hash: string;
   role: Role;
   permissions: TabPermission[];
+  avatar_url?: string;
   created_at: Date;
   created_by?: string;
   updated_at?: Date;
   updated_by?: string;
 }
+
 
 export interface RefreshToken {
   id: string;

@@ -1,37 +1,60 @@
 "use client";
 
 import React, { useState } from "react";
-import { formatIDR } from "@/lib/utils/currency";
+import { formatIDR, formatCurrencyNumber, parseCurrencyNumber } from "@/lib/utils/currency";
+
 import {
-  ListBulletIcon,
-  PlusIcon,
-  TagIcon,
   BookOpenIcon,
   DocumentChartBarIcon,
   PencilSquareIcon,
   TrashIcon,
+  PlusIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/solid";
 import { ConfirmModal } from "./ConfirmModal";
 
 interface MenuListViewProps {
   menus: any[];
   onAddNewMenu: () => void;
-  onEditMenu?: (menu: any) => void;
+  onUpdateMenu?: (updatedMenu: any) => void;
   onDeleteMenu?: (menuId: string | number) => void;
   onPrintCatalogue?: () => void;
   onPrintHppReport?: () => void;
+  onShowToast?: (type: "success" | "error" | "info", text: string) => void;
 }
 
 export const MenuListView: React.FC<MenuListViewProps> = ({
   menus,
   onAddNewMenu,
-  onEditMenu,
+  onUpdateMenu,
   onDeleteMenu,
   onPrintCatalogue,
   onPrintHppReport,
+  onShowToast,
 }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [targetMenu, setTargetMenu] = useState<any>(null);
+
+  // Edit Menu Modal State
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | number | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("Minuman");
+  const [editHpp, setEditHpp] = useState<number>(0);
+  const [editSellingPrice, setEditSellingPrice] = useState<number>(0);
+  const [editImageUrl, setEditImageUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleOpenEdit = (menu: any) => {
+    setEditingId(menu.id);
+    setEditName(menu.name || "");
+    setEditCategory(menu.category || menu.category_name || "Minuman");
+    setEditHpp(menu.hpp || 0);
+    setEditSellingPrice(menu.selling_price || 0);
+    setEditImageUrl(menu.image_url || "");
+    setEditModalOpen(true);
+  };
 
   const handlePromptDelete = (menu: any) => {
     setTargetMenu(menu);
@@ -46,114 +69,295 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
     setTargetMenu(null);
   };
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      const uploadedUrl = json.image_url || json.url;
+
+      if (json.success && uploadedUrl) {
+        setEditImageUrl(uploadedUrl);
+        if (onShowToast) onShowToast("success", "Foto menu berhasil diunggah!");
+      } else {
+        if (onShowToast) onShowToast("error", "Gagal meng-upload foto menu.");
+      }
+    } catch {
+      if (onShowToast) onShowToast("error", "Terjadi kesalahan koneksi saat meng-upload.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingId) return;
+
+    setSaving(true);
+    const margin = editHpp > 0 ? Math.round(((editSellingPrice - editHpp) / editHpp) * 100) : 0;
+    const payload = {
+      id: editingId,
+      name: editName,
+      category_name: editCategory,
+      hpp: editHpp,
+      selling_price: editSellingPrice,
+      margin_percent: margin,
+      image_url: editImageUrl,
+    };
+
+    try {
+      const res = await fetch(`/api/menus/${editingId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        if (onUpdateMenu) onUpdateMenu(json.data || payload);
+        if (onShowToast) onShowToast("success", `Menu "${editName}" berhasil diperbarui!`);
+        setEditModalOpen(false);
+      } else {
+        if (onShowToast) onShowToast("error", json.error || "Gagal memperbarui menu.");
+      }
+    } catch {
+      if (onShowToast) onShowToast("error", "Terjadi kesalahan koneksi ke server.");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const categoriesList = ["Minuman", "Makanan", "Snack", "Lainnya"];
+
   return (
-    <div className="bg-white rounded-3xl border border-stone-200 shadow-xl overflow-hidden animate-fade-in space-y-0 relative">
-      <div className="p-5 border-b border-stone-100 flex flex-wrap justify-between items-center gap-3 bg-stone-50/50">
-        <h3 className="font-black text-base text-[#1E3932] flex items-center gap-2">
-          <ListBulletIcon className="w-5 h-5 text-[#006241]" />
-          <span>Daftar Master Menu & Analisis HPP</span>
-        </h3>
+    <div className="space-y-4 animate-fade-in relative">
+      {/* Top Action Control Buttons */}
+      <div className="flex flex-wrap justify-end gap-2">
+        <button
+          onClick={onPrintCatalogue}
+          className="px-3 py-2 bg-white hover:bg-stone-50 text-stone-800 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-stone-300 shadow-2xs"
+          title="Cetak Daftar Harga Pelanggan"
+        >
+          <BookOpenIcon className="w-3.5 h-3.5 text-stone-600" />
+          <span>Export Menu</span>
+        </button>
 
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={onPrintCatalogue}
-            className="px-3 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold rounded-2xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-            title="Cetak Daftar Harga untuk Pelanggan (Tanpa HPP)"
-          >
-            <BookOpenIcon className="w-4 h-4 text-[#006241]" />
-            <span>Katalog Pelanggan</span>
-          </button>
+        <button
+          onClick={onPrintHppReport}
+          className="px-3 py-2 bg-white hover:bg-stone-50 text-stone-800 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-stone-300 shadow-2xs"
+          title="Cetak Laporan Internal HPP"
+        >
+          <DocumentChartBarIcon className="w-3.5 h-3.5 text-stone-600" />
+          <span>Laporan HPP</span>
+        </button>
 
-          <button
-            onClick={onPrintHppReport}
-            className="px-3 py-2 bg-amber-100 hover:bg-amber-200 text-amber-950 text-xs font-bold rounded-2xl transition-all cursor-pointer flex items-center gap-1.5 active:scale-95 border border-amber-300"
-            title="Cetak Laporan Internal HPP & Margin Lengkap"
-          >
-            <DocumentChartBarIcon className="w-4 h-4 text-amber-800" />
-            <span>Laporan Internal HPP</span>
-          </button>
-
-          <button
-            onClick={onAddNewMenu}
-            className="px-4 py-2 bg-[#543A14] text-[#F0BB78] text-xs font-bold rounded-2xl hover:bg-[#3d2a0e] transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95 transform hover:-translate-y-0.5"
-          >
-            <PlusIcon className="w-4 h-4 text-[#F0BB78]" />
-            <span>Tambah Menu Baru</span>
-          </button>
-        </div>
+        <button
+          onClick={onAddNewMenu}
+          className="px-3.5 py-2 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
+        >
+          <PlusIcon className="w-4 h-4 text-[#F0BB78]" />
+          <span>Tambah Menu Baru</span>
+        </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse text-xs">
-          <thead>
-            <tr className="bg-[#543A14] text-amber-100 font-extrabold uppercase tracking-wider">
-
-              <th className="p-3.5 pl-5">Nama Menu</th>
-              <th className="p-3.5">Kategori</th>
-              <th className="p-3.5">HPP (Modal)</th>
-              <th className="p-3.5">Harga Jual</th>
-              <th className="p-3.5">Margin Profit</th>
-              <th className="p-3.5 text-right">Keuntungan / Item</th>
-              <th className="p-3.5 pr-5 text-center">Aksi (Edit / Hapus)</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-stone-100">
-            {menus.map((m) => (
-              <tr key={m.id} className="hover:bg-amber-50/40 transition-colors">
-                <td className="p-3.5 pl-5 font-bold text-stone-800 flex items-center gap-2">
-                  {m.image_url && (
-                    <img
-                      src={m.image_url}
-                      alt={m.name}
-                      className="w-8 h-8 rounded-lg object-cover border border-stone-200"
-                    />
-                  )}
-                  <span>{m.name}</span>
-                </td>
-                <td className="p-3.5">
-                  <span className="px-2.5 py-1 bg-amber-100/80 text-[#543A14] rounded-full font-bold text-[11px] border border-amber-300/60 inline-flex items-center gap-1">
-                    <TagIcon className="w-3 h-3 text-[#543A14]" />
-                    {m.category || m.category_name}
-                  </span>
-                </td>
-                <td className="p-3.5 text-stone-500 font-medium">{formatIDR(m.hpp)}</td>
-                <td className="p-3.5 font-black text-[#543A14] text-sm">{formatIDR(m.selling_price)}</td>
-                <td className="p-3.5">
-                  <span className="px-2.5 py-1 bg-amber-50 text-amber-900 rounded-full font-black text-[11px] border border-amber-200">
-                    +{m.margin_percent}%
-                  </span>
-                </td>
-                <td className="p-3.5 text-right font-black text-[#543A14] text-sm">
-                  +{formatIDR(m.selling_price - m.hpp)}
-                </td>
-
-                <td className="p-3.5 pr-5 text-center">
-                  <div className="flex items-center justify-center gap-1.5">
-                    {onEditMenu && (
+      {/* Main Table Container (Clean Human-Designed SaaS) */}
+      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-stone-50 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider">
+                <th className="p-3.5 pl-5">Nama Menu</th>
+                <th className="p-3.5">Kategori</th>
+                <th className="p-3.5 text-right">Modal (HPP)</th>
+                <th className="p-3.5 text-right">Harga Jual</th>
+                <th className="p-3.5 text-center">Margin %</th>
+                <th className="p-3.5 text-right">Profit / Porsi</th>
+                <th className="p-3.5 pr-5 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100 font-medium text-stone-900">
+              {menus.map((m) => (
+                <tr key={m.id} className="hover:bg-stone-50/70 transition-colors">
+                  <td className="p-3.5 pl-5">
+                    <div className="flex items-center gap-3">
+                      {m.image_url ? (
+                        <img
+                          src={m.image_url}
+                          alt={m.name}
+                          className="w-8 h-8 rounded-lg object-cover border border-stone-200 shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 text-xs shrink-0 font-bold">
+                          ☕
+                        </div>
+                      )}
+                      <span className="font-semibold text-stone-900">{m.name}</span>
+                    </div>
+                  </td>
+                  <td className="p-3.5">
+                    <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[11px] font-medium border border-stone-200">
+                      {m.category || m.category_name || "Minuman"}
+                    </span>
+                  </td>
+                  <td className="p-3.5 text-right text-stone-500">{formatIDR(m.hpp)}</td>
+                  <td className="p-3.5 text-right font-bold text-stone-900">{formatIDR(m.selling_price)}</td>
+                  <td className="p-3.5 text-center">
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
+                      +{m.margin_percent}%
+                    </span>
+                  </td>
+                  <td className="p-3.5 text-right font-bold text-emerald-700">
+                    +{formatIDR(m.selling_price - m.hpp)}
+                  </td>
+                  <td className="p-3.5 pr-5 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
                       <button
-                        onClick={() => onEditMenu(m)}
-                        className="p-1.5 rounded-xl bg-amber-100 text-amber-900 hover:bg-amber-200 transition-all cursor-pointer active:scale-95"
-                        title="Edit Menu & Resep HPP"
+                        onClick={() => handleOpenEdit(m)}
+                        className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                        title="Edit Menu & Harga Jual"
                       >
                         <PencilSquareIcon className="w-4 h-4" />
                       </button>
-                    )}
-                    {onDeleteMenu && (
-                      <button
-                        onClick={() => handlePromptDelete(m)}
-                        className="p-1.5 rounded-xl bg-rose-100 text-rose-700 hover:bg-rose-200 transition-all cursor-pointer active:scale-95"
-                        title="Hapus Menu dari Supabase"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                      {onDeleteMenu && (
+                        <button
+                          onClick={() => handlePromptDelete(m)}
+                          className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Hapus Menu"
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      {/* Dedicated Edit Menu Pop-up Modal */}
+      {editModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1a0f07]/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <h3 className="text-base font-bold text-stone-900">Edit Menu & Harga Jual</h3>
+              <button
+                onClick={() => setEditModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Nama Menu</label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Kategori Menu</label>
+                <select
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                >
+                  {categoriesList.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">HPP Modal (Rp)</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    value={formatCurrencyNumber(editHpp)}
+                    onChange={(e) => setEditHpp(parseCurrencyNumber(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">Harga Jual (Rp)</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    value={formatCurrencyNumber(editSellingPrice)}
+                    onChange={(e) => setEditSellingPrice(parseCurrencyNumber(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  />
+                </div>
+              </div>
+
+
+              {/* Photo upload field */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Foto Menu (WebP)</label>
+                <div className="flex items-center gap-3">
+                  {editImageUrl ? (
+                    <img
+                      src={editImageUrl}
+                      alt="Preview"
+                      className="w-10 h-10 rounded-lg object-cover border border-stone-200 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 text-xs shrink-0 font-bold">
+                      📷
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="text-xs text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setEditModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold cursor-pointer transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving || uploading}
+                  className="px-4 py-2 rounded-xl bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  {saving ? "Menyimpan..." : "Simpan Perubahan"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Custom Delete Confirmation Modal */}
       <ConfirmModal

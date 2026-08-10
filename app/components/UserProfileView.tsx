@@ -11,25 +11,62 @@ import {
   SparklesIcon,
   BuildingStorefrontIcon,
   IdentificationIcon,
+  PhotoIcon,
+  ArrowUpTrayIcon,
 } from "@heroicons/react/24/solid";
+
 
 interface UserProfileViewProps {
   currentUser: any;
   onLogout: () => void;
+  onShowToast?: (type: "success" | "error" | "info", text: string) => void;
 }
 
-export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, onLogout }) => {
+export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, onLogout, onShowToast }) => {
   const [editName, setEditName] = useState(currentUser?.name || "");
   const [editPassword, setEditPassword] = useState("");
-  const [statusMsg, setStatusMsg] = useState("");
+  const [editAvatarUrl, setEditAvatarUrl] = useState(currentUser?.avatar_url || "");
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const userId = currentUser?.id || "usr-0";
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      const uploadedUrl = json.image_url || json.url;
+
+      if (json.success && uploadedUrl) {
+        setEditAvatarUrl(uploadedUrl);
+        if (onShowToast) {
+          onShowToast("success", "Foto profil berhasil diunggah! Klik 'Simpan Profil Saya' untuk menyimpan.");
+        }
+      } else {
+        const errMsg = "Gagal meng-upload foto profil: " + (json.error || "Terjadi kesalahan");
+        if (onShowToast) onShowToast("error", errMsg);
+      }
+    } catch {
+      if (onShowToast) onShowToast("error", "Terjadi kesalahan koneksi saat meng-upload foto.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setStatusMsg("");
 
     try {
       const res = await fetch("/api/auth/me", {
@@ -38,6 +75,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
         body: JSON.stringify({
           id: userId,
           name: editName,
+          avatar_url: editAvatarUrl,
           ...(editPassword ? { password: editPassword } : {}),
         }),
       });
@@ -45,155 +83,110 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
       const json = await res.json();
       if (json.success && json.user) {
         currentUser.name = json.user.name;
-        setStatusMsg("✓ Profil & Pengaturan akun Anda berhasil diperbarui!");
+        currentUser.avatar_url = json.user.avatar_url;
+        if (onShowToast) {
+          onShowToast("success", "Profil & Foto Akun Anda berhasil diperbarui!");
+        }
         setEditPassword("");
       } else {
-        setStatusMsg(`⚠️ ${json.error || "Gagal memperbarui profil."}`);
+        if (onShowToast) {
+          onShowToast("error", json.error || "Gagal memperbarui profil.");
+        }
       }
     } catch {
-      setStatusMsg("⚠️ Terjadi kesalahan koneksi ke server.");
+      if (onShowToast) onShowToast("error", "Terjadi kesalahan koneksi ke server.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-      {/* Top Banner Header */}
-      <div className="bg-[#1E3932] text-white p-6 sm:p-8 rounded-3xl shadow-xl border border-[#cba258]/30 relative overflow-hidden flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-4 relative z-10">
-          <div className="w-16 h-16 rounded-2xl bg-[#006241] text-amber-300 border-2 border-[#cba258] flex items-center justify-center shadow-lg">
-            <UserIcon className="w-9 h-9" />
-          </div>
+    <div className="max-w-xl mx-auto py-6 animate-fade-in">
+      {/* Clean Human-Designed Profile Container */}
+      <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-xs border border-stone-200/80 space-y-6">
+        <div className="border-b border-stone-100 pb-4">
+          <h2 className="text-lg font-bold text-stone-900 tracking-tight">
+            Pengaturan Profil Akun
+          </h2>
+          <p className="text-xs text-stone-500 mt-1">
+            Kelola nama akun, foto profil avatar, dan kata sandi Anda.
+          </p>
+        </div>
+
+
+        <form onSubmit={handleSaveProfile} className="space-y-5">
+          {/* Avatar Photo Upload */}
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-black tracking-tight text-white">{currentUser?.name}</h2>
-              <span className="px-2.5 py-0.5 rounded-lg bg-emerald-950/80 text-amber-300 text-[10px] font-mono font-extrabold border border-[#cba258]/40">
-                m_users.id: {userId}
-              </span>
-            </div>
-            <p className="text-xs text-emerald-200/90 flex items-center gap-1.5 mt-1 font-medium">
-              <EnvelopeIcon className="w-4 h-4 text-emerald-400" />
-              <span>{currentUser?.email}</span>
-            </p>
-          </div>
-        </div>
+            <label className="block text-xs font-semibold text-stone-700 mb-2">
+              Foto Profil (Avatar)
+            </label>
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center overflow-hidden shrink-0 shadow-xs">
+                {editAvatarUrl ? (
+                  <img src={editAvatarUrl} alt="Preview Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-lg font-extrabold text-[#543A14]">
+                    {currentUser?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </span>
+                )}
+              </div>
 
-        <div className="relative z-10 flex items-center gap-3">
-          <span
-            className={`px-4 py-1.5 rounded-full text-xs font-black tracking-wider uppercase flex items-center gap-1.5 shadow-md ${
-              currentUser?.role === "SUPER_ADMIN"
-                ? "bg-[#cba258] text-[#1E3932]"
-                : currentUser?.role === "ADMIN"
-                ? "bg-[#006241] text-white border border-emerald-400/40"
-                : "bg-amber-700 text-white"
-            }`}
-          >
-            <ShieldCheckIcon className="w-4 h-4" />
-            {currentUser?.role}
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Left Side: Account Info Card */}
-        <div className="bg-white p-6 rounded-3xl border border-stone-200 shadow-md space-y-4 h-fit">
-          <h3 className="font-extrabold text-sm text-[#1E3932] border-b border-stone-100 pb-3 flex items-center gap-2">
-            <IdentificationIcon className="w-4 h-4 text-[#006241]" />
-            <span>Informasi ID & Akun Staff</span>
-          </h3>
-
-          <div className="space-y-3 text-xs">
-            <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200">
-              <p className="text-stone-400 font-bold uppercase text-[10px]">Database Primary Key (m_users.id)</p>
-              <p className="font-mono font-black text-emerald-700 text-sm mt-0.5">{userId}</p>
-            </div>
-
-            <div>
-              <p className="text-stone-400 font-bold uppercase text-[10px]">Email Terdaftar</p>
-              <p className="font-semibold text-stone-800">{currentUser?.email}</p>
-            </div>
-
-            <div>
-              <p className="text-stone-400 font-bold uppercase text-[10px]">Peran Akses Sistem</p>
-              <p className="font-bold text-[#006241]">{currentUser?.role}</p>
-            </div>
-
-            <div>
-              <p className="text-stone-400 font-bold uppercase text-[10px] mb-1">Status Sesi</p>
-              <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 inline-flex items-center gap-1">
-                <CheckCircleIcon className="w-3.5 h-3.5 text-emerald-600" /> Aktif Terhubung
-              </span>
+              <div className="space-y-1">
+                <label className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs rounded-xl cursor-pointer transition-all border border-stone-300 shadow-2xs active:scale-95">
+                  <ArrowUpTrayIcon className="w-4 h-4 text-stone-600" />
+                  <span>{uploading ? "Mengunggah..." : "Pilih Foto Baru"}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </label>
+                <p className="text-[10px] text-stone-400 font-normal">Format: JPG, PNG (Maks 5MB)</p>
+              </div>
             </div>
           </div>
 
-          <div className="pt-4 border-t border-stone-100">
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+              Nama Lengkap Tampilan
+            </label>
+            <input
+              type="text"
+              required
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] focus:border-[#543A14] outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+              Kata Sandi Baru <span className="text-stone-400 font-normal">(Kosongkan jika tidak ingin diubah)</span>
+            </label>
+            <input
+              type="password"
+              value={editPassword}
+              onChange={(e) => setEditPassword(e.target.value)}
+              placeholder="Masukkan kata sandi baru"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] focus:border-[#543A14] outline-none transition-all placeholder:font-normal placeholder:text-stone-400"
+            />
+          </div>
+
+          <div className="pt-2 flex justify-end">
             <button
-              onClick={onLogout}
-              className="w-full py-2.5 bg-rose-900/10 hover:bg-rose-900/20 text-rose-700 font-bold text-xs rounded-2xl transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              type="submit"
+              disabled={loading}
+              className="px-5 py-2.5 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
             >
-              <ArrowRightOnRectangleIcon className="w-4 h-4 text-rose-700" />
-              <span>Keluar Sesi Akun</span>
+              {loading ? "Menyimpan Perubahan..." : "Simpan Profil Saya"}
             </button>
           </div>
-        </div>
-
-        {/* Right Side: Self Edit Form */}
-        <div className="md:col-span-2 bg-white p-6 sm:p-8 rounded-3xl border border-stone-200 shadow-md space-y-5">
-          <div className="border-b border-stone-100 pb-3">
-            <h3 className="font-black text-base text-[#1E3932] flex items-center gap-2">
-              <SparklesIcon className="w-5 h-5 text-[#006241]" />
-              <span>Edit Profil & Kata Sandi (User ID: {userId})</span>
-            </h3>
-            <p className="text-xs text-stone-500 mt-0.5">
-              Perbarui nama tampilan staf dan ubah kata sandi akun Anda secara langsung.
-            </p>
-          </div>
-
-          {statusMsg && (
-            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-extrabold animate-slide-up">
-              {statusMsg}
-            </div>
-          )}
-
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1.5">Nama Lengkap Tampilan</label>
-              <input
-                type="text"
-                required
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                className="w-full px-4 py-3 rounded-2xl border border-stone-300 text-xs font-bold focus:ring-2 focus:ring-[#006241] outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-stone-700 mb-1.5 flex items-center gap-1">
-                <KeyIcon className="w-4 h-4 text-stone-400" />
-                <span>Kata Sandi Baru (Kosongkan jika tidak ingin diubah)</span>
-              </label>
-              <input
-                type="password"
-                value={editPassword}
-                onChange={(e) => setEditPassword(e.target.value)}
-                placeholder="Masukkan kata sandi baru"
-                className="w-full px-4 py-3 rounded-2xl border border-stone-300 text-xs font-bold focus:ring-2 focus:ring-[#006241] outline-none transition-all"
-              />
-            </div>
-
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="px-6 py-3 bg-[#006241] hover:bg-[#1E3932] text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
-              >
-                {loading ? "Menyimpan Perubahan..." : "Simpan Profil Saya"}
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
     </div>
   );
 };
+
+

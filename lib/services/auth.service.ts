@@ -58,22 +58,22 @@ export class AuthService {
     email: string;
     password: string;
     role: Role;
-    permissions: TabPermission[];
+    permissions?: TabPermission[];
+    avatar_url?: string;
   }) {
-    const existing = db.auth.users.find((u) => u.email.toLowerCase() === data.email.toLowerCase());
+    const existing = db.auth.users.find((u) => u.email === data.email);
     if (existing) {
-      return { success: false, error: "Email sudah terdaftar!" };
+      return { success: false, error: "Email sudah terdaftar." };
     }
 
-    const hashedPassword = this.hashPassword(data.password || "123456");
-
     const newUser: User = {
-      id: String(Date.now()),
+      id: String(db.auth.users.length + 1),
       name: data.name,
       email: data.email,
-      password_hash: hashedPassword,
+      password_hash: this.hashPassword(data.password),
       role: data.role,
-      permissions: data.permissions && data.permissions.length > 0 ? data.permissions : ["pos"],
+      permissions: data.permissions || (data.role === "SUPER_ADMIN" ? ["dash", "pos", "calc", "list", "users", "profile"] : data.role === "ADMIN" ? ["dash", "pos", "calc", "list", "profile"] : ["pos", "profile"]),
+      avatar_url: data.avatar_url || "",
       created_at: new Date(),
     };
 
@@ -90,6 +90,7 @@ export class AuthService {
       password?: string;
       role?: Role;
       permissions?: TabPermission[];
+      avatar_url?: string;
     }
   ) {
     const idx = db.auth.users.findIndex((u) => String(u.id) === String(id));
@@ -110,6 +111,7 @@ export class AuthService {
       password_hash: data.password ? this.hashPassword(data.password) : current.password_hash,
       role: data.role ?? current.role,
       permissions: data.permissions ?? current.permissions,
+      avatar_url: data.avatar_url ?? current.avatar_url,
     };
 
     const { password_hash, ...userWithoutPassword } = db.auth.users[idx];
