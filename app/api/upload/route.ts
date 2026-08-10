@@ -50,12 +50,27 @@ export async function POST(request: Request) {
             url: publicUrlData.publicUrl,
           });
         }
+      } else if (error) {
+        console.error("Supabase Storage upload error:", error.message);
       }
-    } catch {
-      // Supabase storage bucket offline or uninitialized
+    } catch (e: any) {
+      console.error("Supabase Storage exception:", e?.message || e);
     }
 
-    // 2. Fallback: Save WebP file locally or convert to Base64 Data URL on Serverless (Vercel)
+    // 2. Fallback for Serverless (Vercel) vs Local Development
+    const isVercel = Boolean(process.env.VERCEL || process.env.NEXT_PUBLIC_VERCEL_ENV);
+
+    if (isVercel) {
+      // Vercel Serverless environment has a read-only filesystem (/var/task)
+      const base64 = webpBuffer.toString("base64");
+      const dataUrl = `data:image/webp;base64,${base64}`;
+      return NextResponse.json({
+        success: true,
+        image_url: dataUrl,
+        url: dataUrl,
+      });
+    }
+
     try {
       const uploadsDir = path.join(process.cwd(), "public", "uploads");
       if (!fs.existsSync(uploadsDir)) {
@@ -72,7 +87,6 @@ export async function POST(request: Request) {
         url: localUrl,
       });
     } catch {
-      // Vercel Serverless environment (read-only filesystem /var/task): Return Base64 Data URL
       const base64 = webpBuffer.toString("base64");
       const dataUrl = `data:image/webp;base64,${base64}`;
       return NextResponse.json({
