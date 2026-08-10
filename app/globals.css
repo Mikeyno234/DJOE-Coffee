@@ -45,24 +45,21 @@ body {
 
 /* NATIVE THERMAL & DOCUMENT PRINT ENGINE RULES */
 @media print {
-  /* Hide browser default header & footer (localhost:3000/pos, page numbers, date) */
   @page {
-    margin: 0 !important;
+    margin: 10mm !important;
     size: auto;
   }
 
-  /* Hide all non-printable UI controls */
   .no-print {
     display: none !important;
   }
 
-  /* Collapse default layout elements so they take 0px height */
-  body > *:not(#printable-receipt-portal) {
+  body > *:not(#printable-receipt-portal):not(#printArea-portal) {
     display: none !important;
   }
 
-  /* Standalone Direct Body Portal Target */
-  #printable-receipt-portal {
+  #printable-receipt-portal,
+  #printArea-portal {
     display: block !important;
     position: absolute !important;
     top: 0 !important;
@@ -73,7 +70,6 @@ body {
     background: #ffffff !important;
   }
 
-  /* Thermal Printable Receipt (1 Sheet strictly centered at top of Page 1) */
   #printable-receipt {
     display: block !important;
     margin: 0 auto !important;
@@ -94,20 +90,17 @@ body {
     background: transparent !important;
   }
 
-  /* Full Catalogue A4 Print Area Centered */
   #printArea {
-    position: absolute !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    top: 0 !important;
-    width: 190mm !important;
-    padding: 10mm !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 190mm !important;
+    margin: 0 auto !important;
+    padding: 5mm !important;
     color: #000000 !important;
     background: #ffffff !important;
-    display: block !important;
-    z-index: 999999 !important;
   }
 }
+
 
 /* Fixed keyframes without transform traps for position: fixed modals */
 @keyframes fadeIn {

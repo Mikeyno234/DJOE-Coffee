@@ -8,24 +8,25 @@ export async function GET(request: Request) {
   const token = tokenMatch ? tokenMatch[1] : null;
 
   if (!token) {
-    return NextResponse.json({
-      success: true,
-      user: {
-        id: "1",
-        name: "Super Admin Utama",
-        email: "superadmin@kedaikopi.com",
-        role: "SUPER_ADMIN",
-        permissions: ["dash", "pos", "calc", "list", "users", "profile"],
-      },
-    });
+    return NextResponse.json({ success: false, error: "Tidak ada sesi login aktif." }, { status: 401 });
   }
 
   const user = AuthService.getCurrentUser(token);
-  if (!user) {
-    return NextResponse.json({ success: false, error: "Session expired" }, { status: 401 });
+  if (user) {
+    return NextResponse.json({ success: true, user });
   }
 
-  return NextResponse.json({ success: true, user });
+  // Fallback: Check token format or Supabase user
+  if (token.startsWith("token-")) {
+    const parts = token.split("-");
+    const userId = parts[parts.length - 1];
+    const foundUser = AuthService.getAllUsers().find((u) => String(u.id) === String(userId));
+    if (foundUser) {
+      return NextResponse.json({ success: true, user: foundUser });
+    }
+  }
+
+  return NextResponse.json({ success: false, error: "Sesi telah berakhir." }, { status: 401 });
 }
 
 export async function PUT(request: Request) {
@@ -65,7 +66,6 @@ export async function PUT(request: Request) {
       .from("m_users")
       .update(updatePayload)
       .eq("id", isNaN(numericId) ? userId : numericId);
-
 
     return NextResponse.json({ success: true, user: res.user });
   } catch (err: any) {

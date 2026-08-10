@@ -450,104 +450,107 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
       />
 
       {!receiptTx && (
-        <div id="printArea" className="hidden">
-          {exportType === "catalogue" ? (
-            <>
-              <h2 style={{ marginBottom: "0.2rem", fontWeight: "bold", fontSize: "1.3rem" }}>
-                Katalog Menu & Daftar Harga - {storeConfig?.store_name || "Kedai Kopi"}
-              </h2>
-              <p style={{ color: "#666", fontSize: "0.85rem", marginBottom: "1rem" }}>
-                {currentDateStr} • Silakan pesan menu favorit Anda
-              </p>
-              <table
-                border={1}
-                cellPadding={8}
-                cellSpacing={0}
-                style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}
-              >
-                <thead>
-                  <tr style={{ background: "#006241", color: "#ffffff" }}>
-                    <th style={{ textAlign: "center", width: "60px" }}>Foto</th>
-                    <th style={{ textAlign: "left" }}>Nama Menu</th>
-                    <th style={{ textAlign: "left" }}>Kategori</th>
-                    <th style={{ textAlign: "right" }}>Harga Jual</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {menus.map((m) => (
-                    <tr key={m.id}>
-                      <td style={{ textAlign: "center", verticalAlign: "middle" }}>
-                        {m.image_url ? (
-                          <img
-                            src={m.image_url}
-                            alt={m.name}
-                            style={{
-                              width: "44px",
-                              height: "44px",
-                              objectFit: "contain",
-                              borderRadius: "8px",
-                              display: "block",
-                              margin: "0 auto",
-                              mixBlendMode: "multiply",
-                              filter: "contrast(1.05)",
-                            }}
-                          />
-                        ) : (
-                          <div style={{ fontSize: "0.9rem", color: "#666" }}>Menu</div>
-                        )}
-                      </td>
-                      <td style={{ fontWeight: "bold", verticalAlign: "middle" }}>{m.name}</td>
-                      <td style={{ verticalAlign: "middle" }}>{m.category || m.category_name}</td>
-                      <td style={{ textAlign: "right", fontWeight: "bold", verticalAlign: "middle", color: "#006241" }}>
-                        {formatIDR(m.selling_price)}
-                      </td>
+        <div id="printArea-portal">
+          <div id="printArea" className="hidden">
+            {exportType === "catalogue" ? (
+              <>
+                <h2 style={{ marginBottom: "0.2rem", fontWeight: "bold", fontSize: "1.3rem" }}>
+                  Katalog Menu & Daftar Harga - {storeConfig?.store_name || "Kedai Kopi"}
+                </h2>
+                <p style={{ color: "#666", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                  {currentDateStr} • Silakan pesan menu favorit Anda
+                </p>
+                <table
+                  border={1}
+                  cellPadding={8}
+                  cellSpacing={0}
+                  style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}
+                >
+                  <thead>
+                    <tr style={{ background: "#006241", color: "#ffffff" }}>
+                      <th style={{ textAlign: "center", width: "60px" }}>Foto</th>
+                      <th style={{ textAlign: "left" }}>Nama Menu</th>
+                      <th style={{ textAlign: "left" }}>Kategori</th>
+                      <th style={{ textAlign: "right" }}>Harga Jual</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          ) : (
-            <>
-              <h2 style={{ marginBottom: "0.2rem", fontWeight: "bold", fontSize: "1.3rem" }}>
-                Export Laporan Internal & Profitabilitas Menu - {storeConfig?.store_name || "Kedai Kopi"}
-              </h2>
+                  </thead>
+                  <tbody>
+                    {menus.map((m) => (
+                      <tr key={m.id}>
+                        <td style={{ textAlign: "center", verticalAlign: "middle" }}>
+                          {m.image_url ? (
+                            <img
+                              src={m.image_url}
+                              alt={m.name}
+                              style={{
+                                width: "44px",
+                                height: "44px",
+                                objectFit: "contain",
+                                borderRadius: "8px",
+                                display: "block",
+                                margin: "0 auto",
+                                mixBlendMode: "multiply",
+                                filter: "contrast(1.05)",
+                              }}
+                            />
+                          ) : (
+                            <div style={{ fontSize: "0.9rem", color: "#666" }}>Menu</div>
+                          )}
+                        </td>
+                        <td style={{ fontWeight: "bold", verticalAlign: "middle" }}>{m.name}</td>
+                        <td style={{ verticalAlign: "middle" }}>{m.category || m.category_name}</td>
+                        <td style={{ textAlign: "right", fontWeight: "bold", verticalAlign: "middle", color: "#006241" }}>
+                          {formatIDR(m.selling_price)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            ) : (
+              <>
+                <h2 style={{ marginBottom: "0.2rem", fontWeight: "bold", fontSize: "1.3rem" }}>
+                  Export Laporan Internal & Profitabilitas Menu - {storeConfig?.store_name || "Kedai Kopi"}
+                </h2>
 
-              <p style={{ color: "#666", fontSize: "0.85rem", marginBottom: "1rem" }}>
-                {currentDateStr} • Rahasia Internal • Dicetak oleh: {currentUser.name} ({currentUser.role})
-              </p>
-              <table
-                border={1}
-                cellPadding={8}
-                cellSpacing={0}
-                style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}
-              >
-                <thead>
-                  <tr style={{ background: "#f0e6d8" }}>
-                    <th>Menu</th>
-                    <th>Kategori</th>
-                    <th>HPP (Modal)</th>
-                    <th>Harga Jual</th>
-                    <th>Margin (%)</th>
-                    <th>Profit / Porsi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {menus.map((m) => (
-                    <tr key={m.id}>
-                      <td style={{ fontWeight: "bold" }}>{m.name}</td>
-                      <td>{m.category || m.category_name}</td>
-                      <td>{formatIDR(m.hpp)}</td>
-                      <td style={{ fontWeight: "bold" }}>{formatIDR(m.selling_price)}</td>
-                      <td>+{m.margin_percent}%</td>
-                      <td style={{ fontWeight: "bold", color: "#2d6a4f" }}>+{formatIDR(m.selling_price - m.hpp)}</td>
+                <p style={{ color: "#666", fontSize: "0.85rem", marginBottom: "1rem" }}>
+                  {currentDateStr} • Rahasia Internal • Dicetak oleh: {currentUser.name} ({currentUser.role})
+                </p>
+                <table
+                  border={1}
+                  cellPadding={8}
+                  cellSpacing={0}
+                  style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.85rem" }}
+                >
+                  <thead>
+                    <tr style={{ background: "#f0e6d8" }}>
+                      <th>Menu</th>
+                      <th>Kategori</th>
+                      <th>HPP (Modal)</th>
+                      <th>Harga Jual</th>
+                      <th>Margin (%)</th>
+                      <th>Profit / Porsi</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </>
-          )}
+                  </thead>
+                  <tbody>
+                    {menus.map((m) => (
+                      <tr key={m.id}>
+                        <td style={{ fontWeight: "bold" }}>{m.name}</td>
+                        <td>{m.category || m.category_name}</td>
+                        <td>{formatIDR(m.hpp)}</td>
+                        <td style={{ fontWeight: "bold" }}>{formatIDR(m.selling_price)}</td>
+                        <td>+{m.margin_percent}%</td>
+                        <td style={{ fontWeight: "bold", color: "#2d6a4f" }}>+{formatIDR(m.selling_price - m.hpp)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
+          </div>
         </div>
       )}
+
 
       <Toast toasts={toasts} onClose={handleCloseToast} />
     </div>
