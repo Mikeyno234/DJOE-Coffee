@@ -13,9 +13,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Kedai Kopi HPP & POS System",
-  description: "Aplikasi Manajemen HPP Kopi, Harga Jual, Kasir POS & Cetak Struk Thermal",
+  title: "DJOE COFFEE - Sistem HPP & Kasir POS",
+  description: "Aplikasi Manajemen HPP Kopi, Harga Jual, Kasir POS & Cetak Struk Thermal - DJOE COFFEE Kendal",
+  icons: {
+    icon: "/images/logo.jpeg",
+    shortcut: "/images/logo.jpeg",
+    apple: "/images/logo.jpeg",
+  },
 };
+
 
 export default function RootLayout({
   children,
