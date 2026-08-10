@@ -55,21 +55,32 @@ export async function POST(request: Request) {
       // Supabase storage bucket offline or uninitialized
     }
 
-    // 2. Fallback: Save WebP file locally in public/uploads/
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
+    // 2. Fallback: Save WebP file locally or convert to Base64 Data URL on Serverless (Vercel)
+    try {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      const localFilePath = path.join(uploadsDir, fileName);
+      fs.writeFileSync(localFilePath, webpBuffer);
+
+      const localUrl = `/uploads/${fileName}`;
+      return NextResponse.json({
+        success: true,
+        image_url: localUrl,
+        url: localUrl,
+      });
+    } catch {
+      // Vercel Serverless environment (read-only filesystem /var/task): Return Base64 Data URL
+      const base64 = webpBuffer.toString("base64");
+      const dataUrl = `data:image/webp;base64,${base64}`;
+      return NextResponse.json({
+        success: true,
+        image_url: dataUrl,
+        url: dataUrl,
+      });
     }
-
-    const localFilePath = path.join(uploadsDir, fileName);
-    fs.writeFileSync(localFilePath, webpBuffer);
-
-    const localUrl = `/uploads/${fileName}`;
-    return NextResponse.json({
-      success: true,
-      image_url: localUrl,
-      url: localUrl,
-    });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
