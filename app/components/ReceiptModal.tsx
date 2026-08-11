@@ -199,27 +199,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
         createPortal(
           <div id="printable-receipt-portal">
             <div id="printable-receipt" className="font-mono text-black">
-              <div className="text-center space-y-1">
+              <div className="text-center space-y-0.5">
                 <img
                   src="/images/Logo/logo.png"
                   alt="DJOE COFFEE Logo"
-                  className="w-12 h-12 rounded-full mx-auto mb-1 border border-black object-cover"
+                  className="w-10 h-10 rounded-full mx-auto mb-1 border border-black object-cover"
                 />
-                <p className="font-black text-base uppercase tracking-wider">{storeName}</p>
-                <p className="text-[10pt] font-bold leading-tight">{storeAddress}</p>
-                <p className="text-[10pt] font-bold">{storePhone}</p>
+                <p className="font-black text-sm uppercase tracking-wider">{storeName}</p>
+                <p className="text-[8pt] font-bold leading-tight">{storeAddress}</p>
+                <p className="text-[8pt] font-bold">{storePhone}</p>
               </div>
 
-              <div className="border-t-2 border-dashed border-black my-2"></div>
+              <div className="border-t border-dashed border-black my-1.5"></div>
 
-              <div className="flex justify-between text-[10pt] font-bold">
+              <div className="flex justify-between text-[8pt] font-bold">
                 <span>{nowStr}</span>
                 <span>#{receiptTx.transaction_no || "TRX-KOP_0001"}</span>
               </div>
 
-              <div className="border-t-2 border-dashed border-black my-2"></div>
+              <div className="border-t border-dashed border-black my-1.5"></div>
 
-              <div className="space-y-2 text-[11pt]">
+              <div className="space-y-1.5 text-[8.5pt]">
                 {receiptTx.items?.map((item: any, idx: number) => (
                   <div key={idx} className="space-y-0.5">
                     <div className="font-extrabold text-black">{item.menu_name}</div>
@@ -235,10 +235,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 ))}
               </div>
 
-              <div className="border-t-2 border-dashed border-black my-2"></div>
+              <div className="border-t border-dashed border-black my-1.5"></div>
 
-              <div className="space-y-1 text-[11pt] font-mono">
-                <div className="flex justify-between font-extrabold text-black text-[12pt]">
+              <div className="space-y-0.5 text-[8.5pt] font-mono">
+                <div className="flex justify-between font-extrabold text-black text-[9.5pt]">
                   <span>Total</span>
                   <span>{formatIDR(receiptTx.total_amount)}</span>
                 </div>
@@ -255,12 +255,12 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 <div className="text-right font-extrabold pt-0.5">Lunas</div>
               </div>
 
-              <div className="border-t-2 border-dashed border-black my-2"></div>
+              <div className="border-t border-dashed border-black my-1.5"></div>
 
-              <div className="text-center text-[10pt] space-y-1 font-bold pt-1">
+              <div className="text-center text-[8pt] space-y-0.5 font-bold pt-0.5">
                 <p>{storeFooter}</p>
                 <p className="font-extrabold">Kasir : {receiptTx.cashier_name || "Shift Cashier"}</p>
-                <p className="font-black pt-1">Terima kasih</p>
+                <p className="font-black pt-0.5">Terima kasih</p>
               </div>
             </div>
           </div>,
