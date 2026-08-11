@@ -99,7 +99,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
           <div className="font-mono text-xs p-4 bg-stone-50 text-black border border-stone-300 rounded-xl space-y-2 leading-tight">
             <div className="text-center space-y-0.5">
               <img
-                src="/images/logo.jpeg"
+                src="/images/Logo/logo.png"
                 alt="DJOE COFFEE Logo"
                 className="w-10 h-10 rounded-full mx-auto mb-1 border border-amber-300/60 object-cover shadow-xs"
               />
@@ -201,7 +201,7 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
             <div id="printable-receipt">
               <div className="text-center space-y-0.5">
                 <img
-                  src="/images/logo.jpeg"
+                  src="/images/Logo/logo.png"
                   alt="DJOE COFFEE Logo"
                   className="w-10 h-10 rounded-full mx-auto mb-1 border border-stone-300 object-cover"
                 />

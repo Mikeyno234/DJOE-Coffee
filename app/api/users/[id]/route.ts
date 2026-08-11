@@ -12,7 +12,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("m_users")
-      .select("id, name, email, role, permissions, created_at, created_by")
+      .select("id, name, email, role, permissions, avatar_url, created_at, created_by")
       .eq("id", isNaN(numericId) ? id : numericId)
       .single();
 

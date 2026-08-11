@@ -150,9 +150,21 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
     }
   };
 
-  const fetchAnalytics = async () => {
+  const [analyticsRange, setAnalyticsRange] = useState<string>("7d");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+
+  const fetchAnalytics = async (
+    range: string = analyticsRange,
+    sDate: string = startDate,
+    eDate: string = endDate
+  ) => {
     try {
-      const res = await fetch("/api/analytics");
+      let query = `/api/analytics?range=${range}`;
+      if (sDate) query += `&start_date=${sDate}`;
+      if (eDate) query += `&end_date=${eDate}`;
+
+      const res = await fetch(query);
       const json = await res.json();
       if (json.success) setAnalytics(json.data);
     } catch {
@@ -363,6 +375,20 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
           <DashboardView
             analytics={analytics}
             menusCount={menus.length}
+            selectedRange={analyticsRange}
+            startDate={startDate}
+            endDate={endDate}
+            onCustomFilterChange={(sDate, eDate) => {
+              setStartDate(sDate);
+              setEndDate(eDate);
+              fetchAnalytics("custom", sDate, eDate);
+            }}
+            onRangeChange={(range) => {
+              setAnalyticsRange(range);
+              setStartDate("");
+              setEndDate("");
+              fetchAnalytics(range, "", "");
+            }}
             onPrintCatalogue={handlePrintCatalogue}
             onPrintHppReport={handlePrintHppReport}
           />
@@ -407,6 +433,7 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
             calculatedPrice={calculatedPrice}
             computedMargin={computedMargin}
             handleSaveMenu={handleSaveMenu}
+            onPrintHppReport={handlePrintHppReport}
             onShowToast={showToast}
           />
         )}

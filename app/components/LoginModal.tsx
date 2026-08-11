@@ -48,13 +48,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1a0f07]/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-      {/* Clean Human-Designed Login Modal */}
+      {/*  Login Modal */}
       <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 max-w-md w-full p-6 sm:p-8 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-6">
         {/* Brand Header */}
         <div className="text-center">
           <div className="w-16 h-16 rounded-full bg-white p-1 border border-stone-200 shadow-xs mx-auto mb-3 flex items-center justify-center shrink-0">
             <img
-              src="/images/logo.jpeg"
+              src="/images/Logo/logo.png"
               alt="DJOE COFFEE Logo"
               className="w-full h-full object-contain rounded-full"
             />

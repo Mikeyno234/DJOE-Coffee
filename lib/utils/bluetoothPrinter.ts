@@ -14,7 +14,7 @@ export class BluetoothThermalPrinter {
       const device = await nav.bluetooth.requestDevice({
         acceptAllDevices: true,
         optionalServices: [
-          "000018f0-0000-1000-8000-00805f9b34fb", // Standard ESC/POS SPP UUID
+          "000018f0-0000-1000-8000-00805f9b34fb",
           "e7810a71-73ae-499d-8c15-faa9aef0c3f2",
           "49535343-fe7d-4ae5-8fa9-9fafd205e455",
         ],
@@ -95,7 +95,7 @@ export class BluetoothThermalPrinter {
       contentStr += `Terima Kasih!\n\n\n\n`;
 
       const dataBytes = encoder.encode(contentStr);
-      
+
       const chunkSize = 100;
       for (let i = 0; i < dataBytes.length; i += chunkSize) {
         const chunk = dataBytes.slice(i, i + chunkSize);

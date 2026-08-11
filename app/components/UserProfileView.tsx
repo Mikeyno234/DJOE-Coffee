@@ -102,7 +102,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
 
   return (
     <div className="max-w-xl mx-auto py-6 animate-fade-in">
-      {/* Clean Human-Designed Profile Container */}
+      {/*  Profile Container */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-xs border border-stone-200/80 space-y-6">
         <div className="border-b border-stone-100 pb-4">
           <h2 className="text-lg font-bold text-stone-900 tracking-tight">

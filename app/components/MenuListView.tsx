@@ -46,6 +46,16 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Add New Menu Modal State
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addName, setAddName] = useState("");
+  const [addCategory, setAddCategory] = useState("Minuman");
+  const [addHpp, setAddHpp] = useState<number>(0);
+  const [addSellingPrice, setAddSellingPrice] = useState<number>(0);
+  const [addImageUrl, setAddImageUrl] = useState("");
+  const [addUploading, setAddUploading] = useState(false);
+  const [addSaving, setAddSaving] = useState(false);
+
   const handleOpenEdit = (menu: any) => {
     setEditingId(menu.id);
     setEditName(menu.name || "");
@@ -136,6 +146,82 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
       setSaving(false);
     }
   };
+  const handleAddImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAddUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      const uploadedUrl = json.image_url || json.url;
+
+      if (json.success && uploadedUrl) {
+        setAddImageUrl(uploadedUrl);
+        if (onShowToast) onShowToast("success", "Foto menu berhasil diunggah!");
+      } else {
+        if (onShowToast) onShowToast("error", "Gagal meng-upload foto menu.");
+      }
+    } catch {
+      if (onShowToast) onShowToast("error", "Terjadi kesalahan koneksi saat meng-upload.");
+    } finally {
+      setAddUploading(false);
+    }
+  };
+
+  const handleOpenAddModal = () => {
+    setAddName("");
+    setAddCategory("Minuman");
+    setAddHpp(0);
+    setAddSellingPrice(0);
+    setAddImageUrl("");
+    setAddModalOpen(true);
+  };
+
+  const handleSaveAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addName.trim()) return;
+
+    setAddSaving(true);
+    const margin = addHpp > 0 ? Math.round(((addSellingPrice - addHpp) / addHpp) * 100) : 0;
+    const payload = {
+      name: addName,
+      category_name: addCategory,
+      category: addCategory,
+      hpp: addHpp,
+      selling_price: addSellingPrice,
+      margin_percent: margin,
+      image_url: addImageUrl,
+    };
+
+    try {
+      const res = await fetch("/api/menus", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const json = await res.json();
+      if (json.success) {
+        if (onUpdateMenu) onUpdateMenu(json.data || payload);
+        if (onShowToast) onShowToast("success", `Menu baru "${addName}" berhasil ditambahkan!`);
+        setAddModalOpen(false);
+      } else {
+        if (onShowToast) onShowToast("error", json.error || "Gagal menambah menu.");
+      }
+    } catch {
+      if (onShowToast) onShowToast("error", "Terjadi kesalahan koneksi ke server.");
+    } finally {
+      setAddSaving(false);
+    }
+  };
 
   const categoriesList = ["Minuman", "Makanan", "Snack", "Lainnya"];
 
@@ -153,16 +239,7 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
         </button>
 
         <button
-          onClick={onPrintHppReport}
-          className="px-3 py-2 bg-white hover:bg-stone-50 text-stone-800 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-stone-300 shadow-2xs"
-          title="Cetak Laporan Internal HPP"
-        >
-          <DocumentChartBarIcon className="w-3.5 h-3.5 text-stone-600" />
-          <span>Laporan HPP</span>
-        </button>
-
-        <button
-          onClick={onAddNewMenu}
+          onClick={handleOpenAddModal}
           className="px-3.5 py-2 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
         >
           <PlusIcon className="w-4 h-4 text-[#F0BB78]" />
@@ -170,7 +247,7 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
         </button>
       </div>
 
-      {/* Main Table Container (Clean Human-Designed SaaS) */}
+      {/* Main Table Container*/}
       <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
@@ -316,26 +393,30 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
 
               {/* Photo upload field */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Foto Menu (WebP)</label>
-                <div className="flex items-center gap-3">
-                  {editImageUrl ? (
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">Foto Menu</label>
+                {editImageUrl && (
+                  <div className="mb-2 relative w-24 h-24 rounded-xl overflow-hidden border border-stone-200 shadow-2xs">
                     <img
                       src={editImageUrl}
-                      alt="Preview"
-                      className="w-10 h-10 rounded-lg object-cover border border-stone-200 shrink-0"
+                      alt="Preview Foto Menu"
+                      className="w-full h-full object-cover"
                     />
-                  ) : (
-                    <div className="w-10 h-10 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 text-xs shrink-0 font-bold">
-                      📷
-                    </div>
-                  )}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="text-xs text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-stone-700 hover:file:bg-stone-200 cursor-pointer"
-                  />
-                </div>
+                    <button
+                      type="button"
+                      onClick={() => setEditImageUrl("")}
+                      className="absolute top-1 right-1 p-1 bg-rose-600/80 hover:bg-rose-600 text-white rounded-md transition-colors cursor-pointer"
+                      title="Hapus Foto"
+                    >
+                      <XMarkIcon className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="text-xs text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-stone-800 hover:file:bg-stone-200 cursor-pointer"
+                />
               </div>
 
               <div className="pt-2 flex justify-end gap-2 border-t border-stone-100">
@@ -352,6 +433,123 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
                   className="px-4 py-2 rounded-xl bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {saving ? "Menyimpan..." : "Simpan Perubahan"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Dedicated Add New Menu Pop-up Modal */}
+      {addModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1a0f07]/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
+            <div className="flex items-center justify-between border-b border-stone-100 pb-3">
+              <h3 className="text-base font-bold text-stone-900">Tambah Menu Baru</h3>
+              <button
+                onClick={() => setAddModalOpen(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAdd} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Nama Menu</label>
+                <input
+                  type="text"
+                  required
+                  value={addName}
+                  onChange={(e) => setAddName(e.target.value)}
+                  placeholder="Contoh: Kopi Susu Gula Aren"
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1">Kategori Menu</label>
+                <select
+                  value={addCategory}
+                  onChange={(e) => setAddCategory(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                >
+                  {categoriesList.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">HPP Modal (Rp)</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    value={formatCurrencyNumber(addHpp)}
+                    onChange={(e) => setAddHpp(parseCurrencyNumber(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">Harga Jual (Rp)</label>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    required
+                    value={formatCurrencyNumber(addSellingPrice)}
+                    onChange={(e) => setAddSellingPrice(parseCurrencyNumber(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Photo upload field */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">Foto Menu</label>
+                {addImageUrl && (
+                  <div className="mb-2 relative w-24 h-24 rounded-xl overflow-hidden border border-stone-200 shadow-2xs">
+                    <img
+                      src={addImageUrl}
+                      alt="Preview Foto Menu"
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setAddImageUrl("")}
+                      className="absolute top-1 right-1 p-1 bg-rose-600/80 hover:bg-rose-600 text-white rounded-md transition-colors cursor-pointer"
+                      title="Hapus Foto"
+                    >
+                      <XMarkIcon className="w-3 h-3" />
+                    </button>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAddImageUpload}
+                  className="text-xs text-stone-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-stone-100 file:text-stone-800 hover:file:bg-stone-200 cursor-pointer"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2 border-t border-stone-100">
+                <button
+                  type="button"
+                  onClick={() => setAddModalOpen(false)}
+                  className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold cursor-pointer transition-colors"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  disabled={addSaving || addUploading}
+                  className="px-4 py-2 rounded-xl bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
+                >
+                  {addSaving ? "Menyimpan..." : "Tambah Menu"}
                 </button>
               </div>
             </form>

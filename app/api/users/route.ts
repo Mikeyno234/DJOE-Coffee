@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const { data, error } = await supabase
       .from("m_users")
-      .select("id, name, email, role, permissions, created_at, created_by")
+      .select("id, name, email, role, permissions, avatar_url, created_at, created_by")
       .order("id", { ascending: true });
 
     if (error) {
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
           password_hash: hashedPassword,
           role: body.role || "CASHIER",
           permissions: body.permissions || ["pos"],
+          avatar_url: body.avatar_url || null,
           created_by: 1,
         },
       ])
@@ -69,6 +70,7 @@ export async function PUT(request: Request) {
       email: data.email,
       role: data.role,
       permissions: data.permissions,
+      ...(data.avatar_url ? { avatar_url: data.avatar_url } : {}),
       updated_by: 1,
       updated_at: new Date().toISOString(),
     };

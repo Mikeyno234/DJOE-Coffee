@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -48,7 +49,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-2xl bg-white p-1 border border-[#F0BB78]/60 shadow-md flex items-center justify-center shrink-0 transform hover:scale-105 transition-transform duration-300">
             <img
-              src="/images/logo.jpeg"
+              src="/images/Logo/logo.jpeg"
               alt="DJOE COFFEE Logo"
               className="w-full h-full object-contain rounded-xl"
             />
@@ -81,13 +82,12 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
             <span className="font-semibold text-amber-50">{currentUser.name}</span>
 
             <span
-              className={`px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider uppercase flex items-center gap-1 shadow-sm ${
-                currentUser.role === "SUPER_ADMIN"
-                  ? "bg-[#F0BB78] text-[#543A14]"
-                  : currentUser.role === "ADMIN"
+              className={`px-2 py-0.5 rounded-lg text-[10px] font-black tracking-wider uppercase flex items-center gap-1 shadow-sm ${currentUser.role === "SUPER_ADMIN"
+                ? "bg-[#F0BB78] text-[#543A14]"
+                : currentUser.role === "ADMIN"
                   ? "bg-amber-800 text-white"
                   : "bg-amber-600 text-white"
-              }`}
+                }`}
             >
               <ShieldCheckIcon className="w-3 h-3" />
               {currentUser.role}
@@ -109,11 +109,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {hasPermission("dash") && (
             <button
               onClick={() => setActiveTab("dash")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                activeTab === "dash"
-                  ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
-                  : "text-amber-100 hover:text-white hover:bg-white/10"
-              }`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${activeTab === "dash"
+                ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
+                : "text-amber-100 hover:text-white hover:bg-white/10"
+                }`}
             >
               <ChartBarIcon className="w-4 h-4" />
               <span>Dashboard</span>
@@ -123,11 +122,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {hasPermission("pos") && (
             <button
               onClick={() => setActiveTab("pos")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                activeTab === "pos"
-                  ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
-                  : "text-amber-100 hover:text-white hover:bg-white/10"
-              }`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${activeTab === "pos"
+                ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
+                : "text-amber-100 hover:text-white hover:bg-white/10"
+                }`}
             >
               <ShoppingBagIcon className="w-4 h-4" />
               <span>Kasir POS</span>
@@ -137,11 +135,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {hasPermission("calc") && (
             <button
               onClick={() => setActiveTab("calc")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                activeTab === "calc"
-                  ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
-                  : "text-amber-100 hover:text-white hover:bg-white/10"
-              }`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${activeTab === "calc"
+                ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
+                : "text-amber-100 hover:text-white hover:bg-white/10"
+                }`}
             >
               <CalculatorIcon className="w-4 h-4" />
               <span>Hitung HPP</span>
@@ -151,11 +148,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {hasPermission("list") && (
             <button
               onClick={() => setActiveTab("list")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                activeTab === "list"
-                  ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
-                  : "text-amber-100 hover:text-white hover:bg-white/10"
-              }`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${activeTab === "list"
+                ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
+                : "text-amber-100 hover:text-white hover:bg-white/10"
+                }`}
             >
               <ListBulletIcon className="w-4 h-4" />
               <span>Daftar Menu</span>
@@ -165,11 +161,10 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({
           {hasPermission("users") && (
             <button
               onClick={() => setActiveTab("users")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${
-                activeTab === "users"
-                  ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
-                  : "text-amber-100 hover:text-white hover:bg-white/10"
-              }`}
+              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 cursor-pointer active:scale-95 ${activeTab === "users"
+                ? "bg-[#F0BB78] text-[#543A14] shadow-md transform scale-105"
+                : "text-amber-100 hover:text-white hover:bg-white/10"
+                }`}
             >
               <UserGroupIcon className="w-4 h-4" />
               <span>Users</span>

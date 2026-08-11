@@ -16,12 +16,9 @@ export const metadata: Metadata = {
   title: "DJOE COFFEE - Sistem HPP & Kasir POS",
   description: "Aplikasi Manajemen HPP Kopi, Harga Jual, Kasir POS & Cetak Struk Thermal - DJOE COFFEE Kendal",
   icons: {
-    icon: [
-      { url: "/images/logo.jpeg" },
-      { url: "/favicon.ico" },
-    ],
-    shortcut: "/images/logo.jpeg",
-    apple: "/images/logo.jpeg",
+    icon: "/images/Logo/logo.png",
+    shortcut: "/images/Logo/logo.png",
+    apple: "/images/Logo/logo.png",
   },
 };
 

@@ -47,6 +47,8 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
   const [formPassword, setFormPassword] = useState("");
   const [formRole, setFormRole] = useState<Role>("CASHIER");
   const [formPermissions, setFormPermissions] = useState<TabPermission[]>(["pos"]);
+  const [formAvatarUrl, setFormAvatarUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   // Custom Delete Modal State
@@ -77,6 +79,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
     setFormPassword("");
     setFormRole("CASHIER");
     setFormPermissions(["pos"]);
+    setFormAvatarUrl("");
     setErrorMsg("");
     setModalOpen(true);
   };
@@ -88,8 +91,39 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
     setFormPassword("");
     setFormRole(user.role);
     setFormPermissions(user.permissions || ["pos"]);
+    setFormAvatarUrl(user.avatar_url || "");
     setErrorMsg("");
     setModalOpen(true);
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      const uploadedUrl = json.image_url || json.url;
+
+      if (json.success && uploadedUrl) {
+        setFormAvatarUrl(uploadedUrl);
+        showToast("success", "Foto profil berhasil diunggah!");
+      } else {
+        setErrorMsg("Gagal meng-upload foto: " + (json.error || "Terjadi kesalahan"));
+      }
+    } catch {
+      setErrorMsg("Terjadi kesalahan koneksi saat meng-upload foto.");
+    } finally {
+      setUploading(false);
+    }
   };
 
   const togglePermission = (perm: TabPermission) => {
@@ -110,6 +144,7 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
       email: formEmail,
       role: formRole,
       permissions: formPermissions,
+      avatar_url: formAvatarUrl,
       ...(formPassword ? { password: formPassword } : {}),
     };
 
@@ -310,6 +345,35 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
                   {errorMsg}
                 </div>
               )}
+
+              {/* Avatar Photo Upload Field */}
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  Foto Profil Pengguna (Avatar)
+                </label>
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs font-extrabold text-[#543A14] text-sm">
+                    {formAvatarUrl ? (
+                      <img src={formAvatarUrl} alt="Preview Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{formName ? formName.charAt(0).toUpperCase() : "U"}</span>
+                    )}
+                  </div>
+                  <div>
+                    <label className="inline-flex items-center gap-1 px-3 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold text-xs rounded-xl cursor-pointer transition-all border border-stone-300 active:scale-95">
+                      <span>{uploading ? "Mengunggah..." : "Pilih Foto"}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        disabled={uploading}
+                        className="hidden"
+                      />
+                    </label>
+                    <p className="text-[10px] text-stone-400 mt-0.5">JPG / PNG maks 5MB</p>
+                  </div>
+                </div>
+              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">Nama Lengkap</label>
