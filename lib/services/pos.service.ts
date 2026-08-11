@@ -9,7 +9,7 @@ export class PosService {
   }
 
   static checkout(payload: {
-    items: { menu_id: string; quantity: number }[];
+    items: { menu_id: string; quantity: number; name?: string; menu_name?: string; hpp?: number; unit_hpp?: number; price?: number; unit_price?: number }[];
     cash_received: number;
     user_id?: string;
     cashier_name?: string;
@@ -22,16 +22,20 @@ export class PosService {
     const txItems: any[] = [];
 
     for (const item of payload.items) {
-      const menu = db.master.menus.find((m: Menu) => m.id === item.menu_id);
-      if (!menu) continue;
-      const subtotal = menu.selling_price * item.quantity;
+      let menu = db.master.menus.find((m: Menu) => m.id === item.menu_id);
+      
+      const menuName = menu?.name || item.name || item.menu_name || "Produk Kopi";
+      const hppVal = menu?.hpp || item.hpp || item.unit_hpp || 0;
+      const priceVal = menu?.selling_price || item.price || item.unit_price || 0;
+
+      const subtotal = priceVal * item.quantity;
       total += subtotal;
       txItems.push({
         id: `txi-${Date.now()}-${Math.random()}`,
-        menu_id: menu.id,
-        menu_name: menu.name,
-        unit_hpp: menu.hpp,
-        unit_price: menu.selling_price,
+        menu_id: item.menu_id,
+        menu_name: menuName,
+        unit_hpp: hppVal,
+        unit_price: priceVal,
         quantity: item.quantity,
         subtotal,
       });

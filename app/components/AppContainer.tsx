@@ -213,7 +213,13 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        items: cart.map((c) => ({ menu_id: c.id, quantity: c.qty })),
+        items: cart.map((c) => ({
+          menu_id: c.id,
+          menu_name: c.name,
+          unit_price: c.price,
+          unit_hpp: c.hpp || 0,
+          quantity: c.qty,
+        })),
         cash_received: cashNum,
         user_id: currentUser?.id,
         cashier_name: currentUser?.name,
