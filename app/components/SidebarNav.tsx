@@ -160,100 +160,109 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
           <nav className="space-y-5">
             {/* Group 1: Operasional Kasir */}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
-                Operasional Kasir
-              </p>
-              <div className="space-y-1">
-                {navItems
-                  .filter((item) => item.group === "POS")
-                  .map((item) => {
-                    if (!hasPermission(item.key)) return null;
-                    const Icon = item.icon;
-                    const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
-                    const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
-                    return (
-                      <Link
-                        key={item.key}
-                        href={item.href}
-                        onClick={(e) => handleNavClick(e, item)}
-                        className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
-                          isActive
-                            ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
-                            : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
-                        }`}
-                      >
-                        <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-              </div>
-            </div>
+            {(() => {
+              const items = navItems.filter((item) => item.group === "POS" && hasPermission(item.key));
+              if (items.length === 0) return null;
+              return (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
+                    Operasional Kasir
+                  </p>
+                  <div className="space-y-1">
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
+                      const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
+                      return (
+                        <Link
+                          key={item.key}
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item)}
+                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
+                            isActive
+                              ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
+                              : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
+                          }`}
+                        >
+                          <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Group 2: Katalog & HPP */}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
-                Katalog & HPP
-              </p>
-              <div className="space-y-1">
-                {navItems
-                  .filter((item) => item.group === "HPP")
-                  .map((item) => {
-                    if (!hasPermission(item.key)) return null;
-                    const Icon = item.icon;
-                    const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
-                    const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
-                    return (
-                      <Link
-                        key={item.key}
-                        href={item.href}
-                        onClick={(e) => handleNavClick(e, item)}
-                        className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
-                          isActive
-                            ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
-                            : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
-                        }`}
-                      >
-                        <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-              </div>
-            </div>
+            {(() => {
+              const items = navItems.filter((item) => item.group === "HPP" && hasPermission(item.key));
+              if (items.length === 0) return null;
+              return (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
+                    Katalog & HPP
+                  </p>
+                  <div className="space-y-1">
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
+                      const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
+                      return (
+                        <Link
+                          key={item.key}
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item)}
+                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
+                            isActive
+                              ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
+                              : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
+                          }`}
+                        >
+                          <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Group 3: Analisis & Pengaturan */}
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
-                Analisis & Pengaturan
-              </p>
-              <div className="space-y-1">
-                {navItems
-                  .filter((item) => item.group === "ANALYTICS")
-                  .map((item) => {
-                    if (!hasPermission(item.key)) return null;
-                    const Icon = item.icon;
-                    const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
-                    const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
-                    return (
-                      <Link
-                        key={item.key}
-                        href={item.href}
-                        onClick={(e) => handleNavClick(e, item)}
-                        className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
-                          isActive
-                            ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
-                            : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
-                        }`}
-                      >
-                        <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-              </div>
-            </div>
+            {(() => {
+              const items = navItems.filter((item) => item.group === "ANALYTICS" && hasPermission(item.key));
+              if (items.length === 0) return null;
+              return (
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
+                    Analisis & Pengaturan
+                  </p>
+                  <div className="space-y-1">
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
+                      const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
+                      return (
+                        <Link
+                          key={item.key}
+                          href={item.href}
+                          onClick={(e) => handleNavClick(e, item)}
+                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
+                            isActive
+                              ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
+                              : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
+                          }`}
+                        >
+                          <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
+                          <span>{item.label}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </nav>
         </div>
 
