@@ -32,13 +32,16 @@ body {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #f5e4cd;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #F0BB78;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #543A14;
 }
@@ -50,7 +53,8 @@ body {
     size: auto;
   }
 
-  html, body {
+  html,
+  body {
     margin: 0 !important;
     padding: 0 !important;
     background: #ffffff !important;
@@ -60,7 +64,7 @@ body {
     display: none !important;
   }
 
-  body > *:not(#printable-receipt-portal):not(#printArea-portal) {
+  body>*:not(#printable-receipt-portal):not(#printArea-portal) {
     display: none !important;
   }
 
@@ -79,8 +83,8 @@ body {
   #printable-receipt {
     display: block !important;
     margin: 0 left !important;
-    width: 44mm !important;
-    max-width: 44mm !important;
+    width: 48mm !important;
+    max-width: 48mm !important;
     padding: 0mm !important;
     background: #ffffff !important;
     color: #000000 !important;
@@ -112,18 +116,37 @@ body {
 
 /* Fixed keyframes without transform traps for position: fixed modals */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-fade-in {
