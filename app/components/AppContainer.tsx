@@ -442,10 +442,20 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
           <MenuListView
             menus={menus}
             onAddNewMenu={() => setActiveTab("calc")}
+            onAddMenu={(newMenu) => {
+              setMenus((prev) => [newMenu, ...prev]);
+              fetchMenus();
+              fetchAnalytics();
+            }}
             onUpdateMenu={(updated) => {
-              setMenus((prev) =>
-                prev.map((m) => (String(m.id) === String(updated.id) ? { ...m, ...updated } : m))
-              );
+              setMenus((prev) => {
+                const exists = prev.some((m) => String(m.id) === String(updated.id));
+                if (exists) {
+                  return prev.map((m) => (String(m.id) === String(updated.id) ? { ...m, ...updated } : m));
+                }
+                return [updated, ...prev];
+              });
+              fetchMenus();
               fetchAnalytics();
             }}
             onDeleteMenu={handleDeleteMenu}

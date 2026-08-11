@@ -16,6 +16,7 @@ import { ConfirmModal } from "./ConfirmModal";
 interface MenuListViewProps {
   menus: any[];
   onAddNewMenu: () => void;
+  onAddMenu?: (newMenu: any) => void;
   onUpdateMenu?: (updatedMenu: any) => void;
   onDeleteMenu?: (menuId: string | number) => void;
   onPrintCatalogue?: () => void;
@@ -26,6 +27,7 @@ interface MenuListViewProps {
 export const MenuListView: React.FC<MenuListViewProps> = ({
   menus,
   onAddNewMenu,
+  onAddMenu,
   onUpdateMenu,
   onDeleteMenu,
   onPrintCatalogue,
@@ -195,6 +197,11 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
       name: addName,
       category_name: addCategory,
       category: addCategory,
+      category_id: "cat-1",
+      ingredients: [],
+      operational_costs: [],
+      target_margin_percent: margin,
+      manual_selling_price: addSellingPrice,
       hpp: addHpp,
       selling_price: addSellingPrice,
       margin_percent: margin,
@@ -210,7 +217,10 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
 
       const json = await res.json();
       if (json.success) {
-        if (onUpdateMenu) onUpdateMenu(json.data || payload);
+        const addedMenu = json.data || payload;
+        if (onAddMenu) onAddMenu(addedMenu);
+        else if (onUpdateMenu) onUpdateMenu(addedMenu);
+
         if (onShowToast) onShowToast("success", `Menu baru "${addName}" berhasil ditambahkan!`);
         setAddModalOpen(false);
       } else {

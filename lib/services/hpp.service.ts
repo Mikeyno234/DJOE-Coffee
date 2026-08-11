@@ -7,12 +7,12 @@ export interface CalculateHPPInput {
 
 export class HppService {
   static calculateHPP(input: CalculateHPPInput) {
-    const ingredientCost = input.ingredients.reduce((acc, curr) => {
+    const ingredientCost = (input.ingredients || []).reduce((acc, curr) => {
       if (curr.package_capacity <= 0) return acc;
       return acc + (curr.package_price / curr.package_capacity) * curr.usage_amount;
     }, 0);
 
-    const operationalCost = input.operational_costs.reduce((acc, curr) => acc + curr.cost_amount, 0);
+    const operationalCost = (input.operational_costs || []).reduce((acc, curr) => acc + curr.cost_amount, 0);
 
     const total_hpp = Math.round(ingredientCost + operationalCost);
 
