@@ -203,27 +203,27 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 <img
                   src="/images/Logo/logo.png"
                   alt="DJOE COFFEE Logo"
-                  className="w-10 h-10 rounded-full mx-auto mb-1 border border-black object-cover"
+                  className="w-9 h-9 rounded-full mx-auto mb-1 border border-black object-cover"
                 />
-                <p className="font-black text-sm uppercase tracking-wider">{storeName}</p>
-                <p className="text-[8pt] font-bold leading-tight">{storeAddress}</p>
-                <p className="text-[8pt] font-bold">{storePhone}</p>
+                <p className="font-black text-xs uppercase tracking-wider">{storeName}</p>
+                <p className="text-[7.5pt] font-bold leading-tight">{storeAddress}</p>
+                <p className="text-[7.5pt] font-bold">{storePhone}</p>
               </div>
 
-              <div className="border-t border-dashed border-black my-1.5"></div>
+              <div className="border-t border-dashed border-black my-1"></div>
 
-              <div className="flex justify-between text-[8pt] font-bold">
+              <div className="flex justify-between text-[7.5pt] font-bold">
                 <span>{nowStr}</span>
-                <span>#{receiptTx.transaction_no || "TRX-KOP_0001"}</span>
+                <span>#{receiptTx.transaction_no || "TRX-001"}</span>
               </div>
 
-              <div className="border-t border-dashed border-black my-1.5"></div>
+              <div className="border-t border-dashed border-black my-1"></div>
 
-              <div className="space-y-1.5 text-[8.5pt]">
+              <div className="space-y-1 text-[8pt]">
                 {receiptTx.items?.map((item: any, idx: number) => (
                   <div key={idx} className="space-y-0.5">
-                    <div className="font-extrabold text-black">{item.menu_name}</div>
-                    <div className="flex justify-between font-bold pl-2">
+                    <div className="font-extrabold text-black truncate max-w-[42mm]">{item.menu_name}</div>
+                    <div className="flex justify-between font-bold pl-1">
                       <span>
                         {item.quantity}x {formatIDR(item.unit_price || item.price || 0).replace("Rp ", "")}
                       </span>
@@ -235,10 +235,10 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 ))}
               </div>
 
-              <div className="border-t border-dashed border-black my-1.5"></div>
+              <div className="border-t border-dashed border-black my-1"></div>
 
-              <div className="space-y-0.5 text-[8.5pt] font-mono">
-                <div className="flex justify-between font-extrabold text-black text-[9.5pt]">
+              <div className="space-y-0.5 text-[8pt] font-mono">
+                <div className="flex justify-between font-extrabold text-black text-[8.5pt]">
                   <span>Total</span>
                   <span>{formatIDR(receiptTx.total_amount)}</span>
                 </div>
@@ -255,9 +255,9 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 <div className="text-right font-extrabold pt-0.5">Lunas</div>
               </div>
 
-              <div className="border-t border-dashed border-black my-1.5"></div>
+              <div className="border-t border-dashed border-black my-1"></div>
 
-              <div className="text-center text-[8pt] space-y-0.5 font-bold pt-0.5">
+              <div className="text-center text-[7.5pt] space-y-0.5 font-bold pt-0.5">
                 <p>{storeFooter}</p>
                 <p className="font-extrabold">Kasir : {receiptTx.cashier_name || "Shift Cashier"}</p>
                 <p className="font-black pt-0.5">Terima kasih</p>
