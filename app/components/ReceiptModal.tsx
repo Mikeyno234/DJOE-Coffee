@@ -198,35 +198,36 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
       {typeof window !== "undefined" &&
         createPortal(
           <div id="printable-receipt-portal">
-            <div id="printable-receipt">
-              <div className="text-center space-y-0.5">
+            <div id="printable-receipt" className="font-mono text-black">
+              <div className="text-center space-y-1">
                 <img
                   src="/images/Logo/logo.png"
                   alt="DJOE COFFEE Logo"
-                  className="w-10 h-10 rounded-full mx-auto mb-1 border border-stone-300 object-cover"
+                  className="w-12 h-12 rounded-full mx-auto mb-1 border border-black object-cover"
                 />
-                <p className="font-black text-sm uppercase tracking-wider">{storeName}</p>
-                <p className="text-[8.5pt] text-stone-700 leading-tight max-w-[220px] mx-auto">{storeAddress}</p>
-                <p className="text-[9pt] text-stone-700">{storePhone}</p>
+                <p className="font-black text-base uppercase tracking-wider">{storeName}</p>
+                <p className="text-[10pt] font-bold leading-tight">{storeAddress}</p>
+                <p className="text-[10pt] font-bold">{storePhone}</p>
               </div>
 
+              <div className="border-t-2 border-dashed border-black my-2"></div>
 
-              <div className="flex justify-between text-[11px] pt-1 border-t border-dashed border-stone-400 font-bold">
+              <div className="flex justify-between text-[10pt] font-bold">
                 <span>{nowStr}</span>
                 <span>#{receiptTx.transaction_no || "TRX-KOP_0001"}</span>
               </div>
 
-              <div className="border-t border-dashed border-stone-400 my-1"></div>
+              <div className="border-t-2 border-dashed border-black my-2"></div>
 
-              <div className="space-y-1.5 text-[11px]">
+              <div className="space-y-2 text-[11pt]">
                 {receiptTx.items?.map((item: any, idx: number) => (
                   <div key={idx} className="space-y-0.5">
-                    <div className="font-bold text-stone-900">{item.menu_name}</div>
-                    <div className="flex justify-between text-stone-700 pl-2">
+                    <div className="font-extrabold text-black">{item.menu_name}</div>
+                    <div className="flex justify-between font-bold pl-2">
                       <span>
                         {item.quantity}x {formatIDR(item.unit_price || item.price || 0).replace("Rp ", "")}
                       </span>
-                      <span className="font-bold text-stone-900">
+                      <span className="font-extrabold text-black">
                         {formatIDR(item.subtotal || item.price * item.quantity).replace("Rp ", "")}
                       </span>
                     </div>
@@ -234,32 +235,32 @@ export const ReceiptModal: React.FC<ReceiptModalProps> = ({
                 ))}
               </div>
 
-              <div className="border-t border-dashed border-stone-400 my-1"></div>
+              <div className="border-t-2 border-dashed border-black my-2"></div>
 
-              <div className="space-y-1 text-[11px] font-mono">
-                <div className="flex justify-between font-bold">
+              <div className="space-y-1 text-[11pt] font-mono">
+                <div className="flex justify-between font-extrabold text-black text-[12pt]">
                   <span>Total</span>
                   <span>{formatIDR(receiptTx.total_amount)}</span>
                 </div>
-                <div className="flex justify-between text-stone-700">
+                <div className="flex justify-between font-bold">
                   <span>Tunai</span>
                   <span>{formatIDR(receiptTx.cash_received)}</span>
                 </div>
                 {receiptTx.change_amount > 0 && (
-                  <div className="flex justify-between text-stone-700">
+                  <div className="flex justify-between font-bold">
                     <span>Kembali</span>
                     <span>{formatIDR(receiptTx.change_amount)}</span>
                   </div>
                 )}
-                <div className="text-right font-bold pt-0.5">Lunas</div>
+                <div className="text-right font-extrabold pt-0.5">Lunas</div>
               </div>
 
-              <div className="border-t border-dashed border-stone-400 my-1"></div>
+              <div className="border-t-2 border-dashed border-black my-2"></div>
 
-              <div className="text-center text-[10px] space-y-1.5 text-stone-700 pt-1 font-sans">
+              <div className="text-center text-[10pt] space-y-1 font-bold pt-1">
                 <p>{storeFooter}</p>
-                <p className="font-bold">Kasir : {receiptTx.cashier_name || "Shift Cashier"}</p>
-                <p className="font-extrabold pt-1">Terima kasih</p>
+                <p className="font-extrabold">Kasir : {receiptTx.cashier_name || "Shift Cashier"}</p>
+                <p className="font-black pt-1">Terima kasih</p>
               </div>
             </div>
           </div>,

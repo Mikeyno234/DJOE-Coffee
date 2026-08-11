@@ -46,8 +46,14 @@ body {
 /* NATIVE THERMAL & DOCUMENT PRINT ENGINE RULES */
 @media print {
   @page {
-    margin: 10mm !important;
+    margin: 0mm !important;
     size: auto;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
   }
 
   .no-print {
@@ -73,12 +79,14 @@ body {
   #printable-receipt {
     display: block !important;
     margin: 0 auto !important;
-    width: 80mm !important;
-    padding: 4mm !important;
+    width: 48mm !important;
+    max-width: 48mm !important;
+    padding: 2mm 0mm !important;
     background: #ffffff !important;
     color: #000000 !important;
-    font-family: 'Courier New', Courier, monospace !important;
-    font-size: 9pt !important;
+    font-family: 'Courier New', Courier, monospace, sans-serif !important;
+    font-size: 10pt !important;
+    font-weight: 700 !important;
     line-height: 1.25 !important;
     border: none !important;
     box-shadow: none !important;
