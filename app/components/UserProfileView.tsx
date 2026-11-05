@@ -1,20 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  UserIcon,
-  EnvelopeIcon,
-  ShieldCheckIcon,
-  KeyIcon,
-  CheckCircleIcon,
-  ArrowRightOnRectangleIcon,
-  SparklesIcon,
-  BuildingStorefrontIcon,
-  IdentificationIcon,
-  PhotoIcon,
-  ArrowUpTrayIcon,
-} from "@heroicons/react/24/solid";
-
+import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 
 interface UserProfileViewProps {
   currentUser: any;
@@ -51,7 +38,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
       if (json.success && uploadedUrl) {
         setEditAvatarUrl(uploadedUrl);
         if (onShowToast) {
-          onShowToast("success", "Foto profil berhasil diunggah! Klik 'Simpan Profil Saya' untuk menyimpan.");
+          onShowToast("success", "Foto profil berhasil diunggah! Klik 'Simpan Profil' untuk menyimpan.");
         }
       } else {
         const errMsg = "Gagal meng-upload foto profil: " + (json.error || "Terjadi kesalahan");
@@ -85,7 +72,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
         currentUser.name = json.user.name;
         currentUser.avatar_url = json.user.avatar_url;
         if (onShowToast) {
-          onShowToast("success", "Profil & Foto Akun Anda berhasil diperbarui!");
+          onShowToast("success", "Profil & Foto Akun berhasil diperbarui.");
         }
         setEditPassword("");
       } else {
@@ -102,17 +89,15 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
 
   return (
     <div className="max-w-xl mx-auto py-6 animate-fade-in">
-      {/*  Profile Container */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-xs border border-stone-200/80 space-y-6">
         <div className="border-b border-stone-100 pb-4">
           <h2 className="text-lg font-bold text-stone-900 tracking-tight">
             Pengaturan Profil Akun
           </h2>
           <p className="text-xs text-stone-500 mt-1">
-            Kelola nama akun, foto profil avatar, dan kata sandi Anda.
+            Kelola nama akun, avatar profil, dan kata sandi Anda.
           </p>
         </div>
-
 
         <form onSubmit={handleSaveProfile} className="space-y-5">
           {/* Avatar Photo Upload */}
@@ -125,7 +110,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
                 {editAvatarUrl ? (
                   <img src={editAvatarUrl} alt="Preview Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-lg font-extrabold text-[#543A14]">
+                  <span className="text-lg font-extrabold text-[#1A120B]">
                     {currentUser?.name?.charAt(0)?.toUpperCase() || "U"}
                   </span>
                 )}
@@ -157,7 +142,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
               required
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] focus:border-[#543A14] outline-none transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] focus:border-[#1A120B] outline-none transition-all"
             />
           </div>
 
@@ -170,7 +155,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
               value={editPassword}
               onChange={(e) => setEditPassword(e.target.value)}
               placeholder="Masukkan kata sandi baru"
-              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] focus:border-[#543A14] outline-none transition-all placeholder:font-normal placeholder:text-stone-400"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] focus:border-[#1A120B] outline-none transition-all placeholder:font-normal placeholder:text-stone-400"
             />
           </div>
 
@@ -178,9 +163,9 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ currentUser, o
             <button
               type="submit"
               disabled={loading}
-              className="px-5 py-2.5 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
+              className="px-5 py-2.5 bg-[#1A120B] hover:bg-[#2D1F15] text-[#C89B3C] font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2 cursor-pointer active:scale-95 disabled:opacity-50"
             >
-              {loading ? "Menyimpan Perubahan..." : "Simpan Profil Saya"}
+              {loading ? "Menyimpan Perubahan..." : "Simpan Profil"}
             </button>
           </div>
         </form>

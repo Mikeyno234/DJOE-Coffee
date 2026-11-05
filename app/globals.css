@@ -1,49 +1,67 @@
 @import "tailwindcss";
 
-/* ponytail: DJOE COFFEE Custom Warm Color Palette (#FFF0DC, #F0BB78, #543A14, #131010) */
-:root {
-  --djoe-cream: #FFF0DC;
-  --djoe-caramel: #F0BB78;
-  --djoe-coffee: #543A14;
-  --djoe-ink: #131010;
+@theme {
+  --font-sans: var(--font-jakarta), system-ui, -apple-system, sans-serif;
+  --color-canvas: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F1F3F5;
+  --color-espresso: #1A120B;
+  --color-espresso-hover: #2A1D13;
+  --color-espresso-light: #3D2B1D;
+  --color-crema: #C89B3C;
+  --color-crema-hover: #B78A2E;
+  --color-crema-light: #FBF7EE;
+  --color-crema-subtle: #F5ECD7;
+  --color-ink: #111827;
+  --color-ink-muted: #6B7280;
+  --color-border-subtle: rgba(0, 0, 0, 0.08);
+}
 
-  --sb-green: #543A14;
-  --sb-accent: #6e4b1b;
-  --sb-house: #3d2a0e;
-  --sb-cream: #FFF0DC;
-  --sb-ceramic: #f5e4cd;
-  --sb-gold: #F0BB78;
-  --sb-gold-light: #fff8ee;
-  --ink: #131010;
-  --muted: #665b50;
-  --success: #2d6a4f;
-  --danger: #c0392b;
+:root {
+  --canvas-bg: #F8F9FA;
+  --surface-card: #FFFFFF;
+  --espresso: #1A120B;
+  --espresso-hover: #2A1D13;
+  --crema: #C89B3C;
+  --crema-light: #FBF7EE;
+  --ink: #111827;
+  --muted: #6B7280;
+  --success: #16A34A;
+  --danger: #DC2626;
+  --border-subtle: rgba(0, 0, 0, 0.08);
 }
 
 body {
-  background-color: var(--djoe-cream);
-  color: var(--djoe-ink);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  background-color: var(--canvas-bg);
+  color: var(--ink);
+  font-family: var(--font-jakarta), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Custom Scrollbars */
+/* Tabular numbers invariant for prices, counters, margins */
+.tabular-nums,
+[data-tabular-nums] {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom Sleek Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f5e4cd;
+  background: #F1F3F5;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #F0BB78;
+  background: #D1D5DB;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #543A14;
+  background: #9CA3AF;
 }
 
 /* NATIVE THERMAL & DOCUMENT PRINT ENGINE RULES */
@@ -64,7 +82,7 @@ body {
     display: none !important;
   }
 
-  body>*:not(#printable-receipt-portal):not(#printArea-portal) {
+  body > *:not(#printable-receipt-portal):not(#printArea-portal) {
     display: none !important;
   }
 
@@ -113,13 +131,11 @@ body {
   }
 }
 
-
-/* Fixed keyframes without transform traps for position: fixed modals */
+/* Smooth micro-animations */
 @keyframes fadeIn {
   from {
     opacity: 0;
   }
-
   to {
     opacity: 1;
   }
@@ -128,9 +144,8 @@ body {
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -140,9 +155,8 @@ body {
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
-
   to {
     opacity: 1;
     transform: scale(1);
@@ -150,13 +164,76 @@ body {
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 0.2s ease-out forwards;
 }
 
 .animate-slide-up {
-  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-scale-in {
-  animation: scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: scaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ==========================================================================
+   APPLE DESIGN FLUID INTERFACE UTILITIES (/apple-design)
+   ========================================================================== */
+
+/* 1. Instant Tactile Response on Pointer-Down (Kill Latency) */
+.pos-touch-btn,
+.apple-btn {
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 100ms cubic-bezier(0.2, 0, 0, 1), background-color 150ms ease, opacity 100ms ease;
+}
+
+.pos-touch-btn:active,
+.apple-btn:active {
+  transform: scale(0.96);
+  transition-duration: 60ms;
+}
+
+/* 2. Apple Materials & Depth (Frosted Translucency with Vibrancy) */
+.apple-glass {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(20px) saturate(190%);
+  -webkit-backdrop-filter: blur(20px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05), 0 0 1px 1px rgba(0, 0, 0, 0.02);
+}
+
+.apple-glass-nav {
+  background: rgba(248, 249, 250, 0.85);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* 3. Optical Moneter Typography (WWDC The Details of UI Typography) */
+.currency-hero {
+  font-family: var(--font-jakarta), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.035em; /* Negative tracking for large currency figures */
+  font-feature-settings: "tnum" 1, "cv05" 1;
+}
+
+.currency-sub {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.015em;
+  font-feature-settings: "tnum" 1;
+}
+
+/* 4. Reduced Motion & Accessibility Guard */
+@media (prefers-reduced-motion: reduce) {
+  .pos-touch-btn:active,
+  .apple-btn:active {
+    transform: none !important;
+  }
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in {
+    animation: none !important;
+    transition: opacity 150ms ease !important;
+  }
 }

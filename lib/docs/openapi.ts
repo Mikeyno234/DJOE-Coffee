@@ -104,17 +104,30 @@ export const openApiSpec = {
         },
       },
     },
-    "/api/transactions": {
+    "/api/pos/catalog": {
       get: {
-        summary: "Get transaction list",
-        tags: ["Transactions"],
+        summary: "Cashier catalog: store, categories, products with variants and modifier groups",
+        tags: ["POS"],
         responses: {
-          200: { description: "List of transactions" },
+          200: { description: "Catalog without cost (HPP) fields" },
+          401: { description: "Not authenticated" },
+          503: { description: "Database unreachable" },
         },
       },
+    },
+    "/api/checkout": {
       post: {
-        summary: "Create new POS transaction",
-        tags: ["Transactions"],
+        summary: "Create a paid cash order atomically; prices are computed on the server",
+        tags: ["POS"],
+        parameters: [
+          {
+            name: "Idempotency-Key",
+            in: "header",
+            required: true,
+            schema: { type: "string", minLength: 8, maxLength: 100 },
+            description: "Repeating a key returns the original order instead of creating another",
+          },
+        ],
         requestBody: {
           required: true,
           content: {
@@ -122,16 +135,26 @@ export const openApiSpec = {
               schema: {
                 type: "object",
                 properties: {
-                  cash_received: { type: "number", example: 50000 },
-                  payment_method: { type: "string", example: "CASH" },
+                  store_id: { type: "integer", example: 2 },
+                  order_type: { type: "string", enum: ["dine_in", "takeaway", "delivery"] },
+                  discount_amount: { type: "integer", example: 0 },
                   items: {
                     type: "array",
                     items: {
                       type: "object",
                       properties: {
-                        menu_id: { type: "string" },
-                        quantity: { type: "number" },
+                        product_id: { type: "integer" },
+                        variant_id: { type: "integer", nullable: true },
+                        quantity: { type: "integer", minimum: 1, maximum: 99 },
+                        modifiers: { type: "array", items: { type: "integer" } },
                       },
+                    },
+                  },
+                  payment: {
+                    type: "object",
+                    properties: {
+                      method: { type: "string", enum: ["cash"] },
+                      cash_received: { type: "integer", example: 50000 },
                     },
                   },
                 },
@@ -140,7 +163,11 @@ export const openApiSpec = {
           },
         },
         responses: {
-          200: { description: "Transaction completed" },
+          200: { description: "Order created or replayed" },
+          400: { description: "Missing or malformed Idempotency-Key or JSON body" },
+          422: { description: "Validation failed or business rule violated" },
+          502: { description: "Storage failure, nothing was created" },
+          503: { description: "Database unreachable, order status uncertain" },
         },
       },
     },

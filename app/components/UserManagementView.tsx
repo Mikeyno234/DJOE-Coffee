@@ -205,10 +205,10 @@ export const UserManagementView: React.FC<UserManagementViewProps> = ({ currentU
         <div className="flex justify-end">
           <button
             onClick={handleOpenCreateModal}
-            className="px-3.5 py-2 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] font-bold text-xs rounded-xl shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 active:scale-[0.98]"
+            className="px-3.5 py-2 bg-[#1A120B] hover:bg-[#2A1D13] text-white font-bold text-xs rounded-xl shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 active:scale-[0.98]"
           >
-            <UserPlusIcon className="w-4 h-4 text-[#F0BB78]" />
-            <span>TAMBAH PENGGUNA BARU</span>
+            <UserPlusIcon className="w-4 h-4 text-[#C89B3C]" />
+            <span>Tambah Pengguna Baru</span>
           </button>
         </div>
       )}

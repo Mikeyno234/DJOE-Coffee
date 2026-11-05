@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { SidebarNav } from "./SidebarNav";
 import { DashboardView } from "./DashboardView";
-import { POSView } from "./POSView";
 import { CalculatorView } from "./CalculatorView";
 import { MenuListView } from "./MenuListView";
 import { UserManagementView } from "./UserManagementView";
@@ -57,9 +56,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
 
   const [menus, setMenus] = useState<any[]>([]);
   const [analytics, setAnalytics] = useState<any>(null);
-  const [cart, setCart] = useState<{ id: string; name: string; price: number; hpp: number; qty: number }[]>([]);
-  const [cashInput, setCashInput] = useState<string>("");
-  const [selectedCat, setSelectedCat] = useState<string>("Semua");
 
   const [formMenuName, setFormMenuName] = useState("");
   const [formCategory, setFormCategory] = useState("Minuman");
@@ -135,8 +131,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
   const handleLogout = () => {
     setIsAuthenticated(false);
     setCurrentUser(null);
-    setCart([]);
-    setCashInput("");
     showToast("info", "Anda telah berhasil keluar dari akun.");
   };
 
@@ -169,72 +163,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
       if (json.success) setAnalytics(json.data);
     } catch {
       // fallback
-    }
-  };
-
-  // Cart operations
-  const addToCart = (menu: any) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.id === menu.id);
-      if (existing) {
-        return prev.map((item) => (item.id === menu.id ? { ...item, qty: item.qty + 1 } : item));
-      }
-      return [...prev, { id: menu.id, name: menu.name, price: menu.selling_price, hpp: menu.hpp, qty: 1 }];
-    });
-    showToast("success", `${menu.name} ditambahkan ke keranjang`);
-  };
-
-  const updateCartQty = (id: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.id === id) {
-            const newQty = item.qty + delta;
-            return newQty > 0 ? { ...item, qty: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as any
-    );
-  };
-
-  const clearCart = () => setCart([]);
-
-  const cartTotal = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const cashNum = parseFloat(cashInput.replace(/\./g, "")) || 0;
-  const changeNum = cashNum >= cartTotal ? cashNum - cartTotal : 0;
-
-  // Checkout Handler
-  const handleCheckout = async () => {
-    if (cart.length === 0) return showToast("error", "Keranjang belanja masih kosong!");
-    if (cashNum < cartTotal) return showToast("error", "Uang diterima kurang dari total belanja!");
-
-    const res = await fetch("/api/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        items: cart.map((c) => ({
-          menu_id: c.id,
-          menu_name: c.name,
-          unit_price: c.price,
-          unit_hpp: c.hpp || 0,
-          quantity: c.qty,
-        })),
-        cash_received: cashNum,
-        user_id: currentUser?.id,
-        cashier_name: currentUser?.name,
-      }),
-    });
-
-    const json = await res.json();
-    if (json.success) {
-      setReceiptTx(json.data);
-      setCart([]);
-      setCashInput("");
-      fetchAnalytics();
-      showToast("success", "Transaksi berhasil! Struk telah dicetak.");
-    } else {
-      showToast("error", "Checkout gagal: " + (json.error || "Terjadi kesalahan"));
     }
   };
 
@@ -314,16 +242,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
     }
   };
 
-  const categories = [
-    "Semua",
-    "Milk Based",
-    "Signature Menu",
-    "Non - Coffee",
-    "Classic and Manual Brew",
-    "Snack",
-    "Lainnya",
-  ];
-
 
   const hasAccess = (tab: TabPermission) => {
     if (!currentUser) return false;
@@ -368,7 +286,7 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
 
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-[#f2f0eb] text-[#1a0f07]">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-[#F8F9FA] text-[#111827]">
       <SidebarNav
         currentUser={currentUser}
         activeTab={activeTab}
@@ -376,7 +294,13 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 w-full mx-auto p-4 md:p-6 lg:p-8 pb-20 lg:pb-8 space-y-6 overflow-x-hidden">
+      <main
+        className={`flex-1 w-full mx-auto overflow-x-hidden ${
+          activeTab === "pos"
+            ? "h-screen lg:overflow-hidden p-2 sm:p-3 lg:p-4 pb-20 lg:pb-4 flex flex-col bg-[#F3F4F6]"
+            : "p-4 md:p-6 lg:p-8 pb-20 lg:pb-8 space-y-6"
+        }`}
+      >
         {activeTab === "dash" && hasAccess("dash") && (
           <DashboardView
             analytics={analytics}
@@ -397,25 +321,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
             }}
             onPrintCatalogue={handlePrintCatalogue}
             onPrintHppReport={handlePrintHppReport}
-          />
-        )}
-
-        {activeTab === "pos" && hasAccess("pos") && (
-          <POSView
-            menus={menus}
-            categories={categories}
-            selectedCat={selectedCat}
-            setSelectedCat={setSelectedCat}
-            cart={cart}
-            addToCart={addToCart}
-            updateCartQty={updateCartQty}
-            clearCart={() => setCart([])}
-            cartTotal={cartTotal}
-            cashInput={cashInput}
-            setCashInput={setCashInput}
-            cashNum={cashNum}
-            changeNum={changeNum}
-            handleCheckout={handleCheckout}
           />
         )}
 
@@ -510,7 +415,7 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
                   style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem" }}
                 >
                   <thead>
-                    <tr style={{ background: "#006241", color: "#ffffff" }}>
+                    <tr style={{ background: "#1A120B", color: "#ffffff" }}>
                       <th style={{ textAlign: "center", width: "60px" }}>Foto</th>
                       <th style={{ textAlign: "left" }}>Nama Menu</th>
                       <th style={{ textAlign: "left" }}>Kategori</th>
@@ -532,8 +437,6 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
                                 borderRadius: "8px",
                                 display: "block",
                                 margin: "0 auto",
-                                mixBlendMode: "multiply",
-                                filter: "contrast(1.05)",
                               }}
                             />
                           ) : (
@@ -542,7 +445,7 @@ export default function AppContainer({ activeRoute = "pos" }: AppContainerProps)
                         </td>
                         <td style={{ fontWeight: "bold", verticalAlign: "middle" }}>{m.name}</td>
                         <td style={{ verticalAlign: "middle" }}>{m.category || m.category_name}</td>
-                        <td style={{ textAlign: "right", fontWeight: "bold", verticalAlign: "middle", color: "#006241" }}>
+                        <td style={{ textAlign: "right", fontWeight: "bold", verticalAlign: "middle", color: "#1A120B" }}>
                           {formatIDR(m.selling_price)}
                         </td>
                       </tr>
