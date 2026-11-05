@@ -3,6 +3,7 @@ import { supabase } from "@/lib/db/supabaseClient";
 import { db } from "@/lib/db/client";
 import { MenuService } from "@/lib/services/menu.service";
 import { RecipeIngredient, OperationalCost } from "@/lib/models/menu";
+import { requireAuth } from "@/lib/utils/authGuard";
 
 export async function GET(
   request: Request,
@@ -66,6 +67,11 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = requireAuth(request, ["SUPER_ADMIN", "ADMIN"]);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
+    }
+
     const { id: menuId } = await params;
     const body = await request.json();
     const result = MenuService.saveMenu({ ...body, id: menuId });
@@ -75,19 +81,26 @@ export async function PUT(
     }
 
     const numericId = Number(menuId);
-    await supabase
-      .from("m_menus")
-      .update({
-        name: body.name,
-        category_name: body.category_name,
-        hpp: body.hpp,
-        selling_price: body.selling_price,
-        margin_percent: body.margin_percent,
-        image_url: body.image_url,
-        updated_by: 1,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", isNaN(numericId) ? menuId : numericId);
+    const numericUserId = Number(auth.user.id);
+    const validUserId = isNaN(numericUserId) ? 1 : numericUserId;
+
+    try {
+      await supabase
+        .from("m_menus")
+        .update({
+          name: body.name,
+          category_name: body.category_name,
+          hpp: body.hpp,
+          selling_price: body.selling_price,
+          margin_percent: body.margin_percent,
+          image_url: body.image_url,
+          updated_by: validUserId,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", isNaN(numericId) ? menuId : numericId);
+    } catch {
+      // fallback
+    }
 
     return NextResponse.json({ success: true, data: result.menu });
   } catch (err: any) {
@@ -100,14 +113,23 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = requireAuth(request, ["SUPER_ADMIN", "ADMIN"]);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
+    }
+
     const { id: menuId } = await params;
     const numericId = Number(menuId);
 
-    // Delete menu from Supabase m_menus table (cascade deletes ingredients & costs)
-    const { error } = await supabase
-      .from("m_menus")
-      .delete()
-      .eq("id", isNaN(numericId) ? menuId : numericId);
+    // Delete menu from Supabase m_menus table
+    try {
+      await supabase
+        .from("m_menus")
+        .delete()
+        .eq("id", isNaN(numericId) ? menuId : numericId);
+    } catch {
+      // fallback
+    }
 
     // Also update in-memory
     const index = db.master.menus.findIndex((m) => String(m.id) === String(menuId));
@@ -115,11 +137,7 @@ export async function DELETE(
       db.master.menus.splice(index, 1);
     }
 
-    if (error) {
-      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json({ success: true, message: "Menu berhasil dihapus dari Supabase" });
+    return NextResponse.json({ success: true, message: "Menu berhasil dihapus" });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

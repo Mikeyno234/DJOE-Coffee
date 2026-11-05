@@ -1,7 +1,6 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import AppContainer from "@/app/components/AppContainer";
-
+// The cashier terminal is the landing screen; admin tools live behind their own routes.
 export default function Home() {
-  return <AppContainer activeRoute="pos" />;
+  redirect("/pos");
 }

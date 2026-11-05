@@ -3,6 +3,7 @@ import { supabase } from "@/lib/db/supabaseClient";
 import { db } from "@/lib/db/client";
 import { MenuService } from "@/lib/services/menu.service";
 import { Menu } from "@/lib/models/menu";
+import { requireAuth } from "@/lib/utils/authGuard";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -56,6 +57,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    // RBAC: Creating menu requires ADMIN or SUPER_ADMIN
+    const auth = requireAuth(request, ["SUPER_ADMIN", "ADMIN"]);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
+    }
+
     const body = await request.json();
 
     const safeBody = {
@@ -73,6 +80,9 @@ export async function POST(request: Request) {
     const priceVal = body.selling_price !== undefined ? body.selling_price : (result.menu?.selling_price || 0);
     const marginVal = body.margin_percent !== undefined ? body.margin_percent : (result.menu?.margin_percent || 0);
 
+    const numericUserId = Number(auth.user.id);
+    const validUserId = isNaN(numericUserId) ? 1 : numericUserId;
+
     const newMenuData = {
       name: body.name,
       category_name: body.category_name || "Minuman",
@@ -80,7 +90,7 @@ export async function POST(request: Request) {
       selling_price: priceVal,
       margin_percent: marginVal,
       image_url: body.image_url || "",
-      created_by: 1
+      created_by: validUserId,
     };
 
     // Insert into Supabase m_menus
@@ -92,7 +102,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      data: result.menu || { id: `menu-${Date.now()}`, ...newMenuData }
+      data: result.menu || { id: `menu-${Date.now()}`, ...newMenuData },
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

@@ -2,14 +2,11 @@
 
 import React, { useState } from "react";
 import { formatIDR, formatCurrencyNumber, parseCurrencyNumber } from "@/lib/utils/currency";
-
 import {
   PlusIcon,
   TrashIcon,
-  CheckIcon,
-  PhotoIcon,
-  ArrowUpTrayIcon,
-} from "@heroicons/react/24/solid";
+  PrinterIcon,
+} from "@heroicons/react/24/outline";
 
 interface IngredientItem {
   name: string;
@@ -111,17 +108,15 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
   };
 
   return (
-    <div
-      className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200/80 shadow-xs space-y-6 max-w-4xl mx-auto animate-fade-in"
-    >
+    <div className="bg-white p-6 sm:p-8 rounded-3xl border border-stone-200/70 shadow-xs space-y-6 max-w-4xl mx-auto animate-fade-in">
       {/* Title Banner & Export Button */}
       <div className="border-b border-stone-100 pb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-lg font-bold text-stone-900 tracking-tight">
+          <h2 className="text-lg font-black text-[#1A120B] tracking-tight">
             Kalkulator & Simulator HPP Resep
           </h2>
           <p className="text-xs text-stone-500 mt-1 font-medium">
-            Simulasi perhitungan HPP dari rincian bahan baku & kemasan overhead, serta analisis batas margin profit target.
+            Simulasi perhitungan HPP dari rincian bahan baku dan kemasan overhead, serta analisis batas margin profit target.
           </p>
         </div>
 
@@ -129,10 +124,11 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
           <button
             type="button"
             onClick={onPrintHppReport}
-            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-extrabold rounded-xl transition-all cursor-pointer flex items-center gap-2 border border-stone-300 shadow-2xs active:scale-95"
+            className="px-3.5 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-2 border border-stone-200 shadow-2xs active:scale-95"
             title="Cetak Laporan Internal HPP Keseluruhan"
           >
-            <span>Cetak / Export Laporan HPP</span>
+            <PrinterIcon className="w-3.5 h-3.5 text-[#C89B3C]" />
+            <span>Cetak Laporan HPP</span>
           </button>
         )}
       </div>
@@ -140,21 +136,21 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
       {/* Main Details */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs font-semibold text-stone-700 block mb-1">Nama Produk / Resep Simulasi</label>
+          <label className="text-xs font-bold text-stone-700 block mb-1">Nama Produk / Resep</label>
           <input
             type="text"
             value={formMenuName}
             onChange={(e) => setFormMenuName(e.target.value)}
-            placeholder="Contoh: Kopi Susu Aren (Simulasi Resep)"
-            className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+            placeholder="Contoh: Kopi Susu Aren"
+            className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none"
           />
         </div>
         <div>
-          <label className="text-xs font-semibold text-stone-700 block mb-1">Kategori Produk</label>
+          <label className="text-xs font-bold text-stone-700 block mb-1">Kategori Produk</label>
           <select
             value={formCategory}
             onChange={(e) => setFormCategory(e.target.value)}
-            className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+            className="w-full px-3.5 py-2.5 border border-stone-300 rounded-xl text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none bg-white"
           >
             {categoriesList.map((catName) => (
               <option key={catName} value={catName}>
@@ -174,9 +170,9 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
           <button
             type="button"
             onClick={() => setIngredients([...ingredients, { name: "", price: 0, capacity: 1000, usage: 0 }])}
-            className="text-xs font-bold text-[#543A14] hover:text-[#3d2a0e] flex items-center gap-1 cursor-pointer transition-colors"
+            className="text-xs font-bold text-[#1A120B] hover:text-stone-700 flex items-center gap-1 cursor-pointer transition-colors"
           >
-            <PlusIcon className="w-4 h-4 text-[#543A14]" />
+            <PlusIcon className="w-4 h-4 text-[#C89B3C]" />
             <span>Tambah Bahan</span>
           </button>
         </div>
@@ -195,7 +191,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
                 copy[idx].name = e.target.value;
                 setIngredients(copy);
               }}
-              className="col-span-4 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#543A14] outline-none"
+              className="col-span-4 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#1A120B] outline-none"
             />
             <input
               type="text"
@@ -207,7 +203,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
                 copy[idx].price = parseCurrencyNumber(e.target.value);
                 setIngredients(copy);
               }}
-              className="col-span-3 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#543A14] outline-none"
+              className="col-span-3 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
             />
             <input
               type="number"
@@ -218,7 +214,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
                 copy[idx].capacity = parseFloat(e.target.value) || 0;
                 setIngredients(copy);
               }}
-              className="col-span-2 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#543A14] outline-none"
+              className="col-span-2 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
             />
             <input
               type="number"
@@ -229,7 +225,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
                 copy[idx].usage = parseFloat(e.target.value) || 0;
                 setIngredients(copy);
               }}
-              className="col-span-2 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#543A14] outline-none"
+              className="col-span-2 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
             />
             <div className="col-span-1 text-center">
               {ingredients.length > 1 && (
@@ -237,6 +233,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
                   type="button"
                   onClick={() => setIngredients(ingredients.filter((_, i) => i !== idx))}
                   className="p-1 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                  aria-label="Hapus bahan"
                 >
                   <TrashIcon className="w-3.5 h-3.5" />
                 </button>
@@ -255,9 +252,9 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
           <button
             type="button"
             onClick={() => setOperational([...operational, { name: "", cost: 0 }])}
-            className="text-xs font-bold text-[#543A14] hover:text-[#3d2a0e] flex items-center gap-1 cursor-pointer transition-colors"
+            className="text-xs font-bold text-[#1A120B] hover:text-stone-700 flex items-center gap-1 cursor-pointer transition-colors"
           >
-            <PlusIcon className="w-4 h-4 text-[#543A14]" />
+            <PlusIcon className="w-4 h-4 text-[#C89B3C]" />
             <span>Tambah Overhead</span>
           </button>
         </div>
@@ -269,14 +266,14 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
           >
             <input
               type="text"
-              placeholder="Biaya Kemasan (ex: Cup)"
+              placeholder="Biaya Kemasan (ex: Cup 16oz + Tutup)"
               value={op.name}
               onChange={(e) => {
                 const copy = [...operational];
                 copy[idx].name = e.target.value;
                 setOperational(copy);
               }}
-              className="col-span-7 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#543A14] outline-none"
+              className="col-span-7 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#1A120B] outline-none"
             />
             <input
               type="text"
@@ -288,7 +285,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
                 copy[idx].cost = parseCurrencyNumber(e.target.value);
                 setOperational(copy);
               }}
-              className="col-span-4 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#543A14] outline-none"
+              className="col-span-4 px-3 py-1.5 bg-white border border-stone-300 rounded-lg font-medium focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
             />
             <div className="col-span-1 text-center">
               {operational.length > 1 && (
@@ -296,6 +293,7 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
                   type="button"
                   onClick={() => setOperational(operational.filter((_, i) => i !== idx))}
                   className="p-1 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
+                  aria-label="Hapus biaya overhead"
                 >
                   <TrashIcon className="w-3.5 h-3.5" />
                 </button>
@@ -306,35 +304,35 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
       </div>
 
       {/* Summary Box */}
-      <div className="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-3">
+      <div className="bg-stone-50 p-4 rounded-2xl border border-stone-200/80 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
-          <div className="bg-white p-3 rounded-lg border border-stone-200/80">
-            <span className="text-[10px] font-semibold text-stone-500 block uppercase">Total Modal (HPP)</span>
-            <span className="text-base font-bold text-stone-900">{formatIDR(computedHpp)}</span>
+          <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 shadow-2xs">
+            <span className="text-[10px] font-bold text-stone-500 block uppercase">Total Modal (HPP)</span>
+            <span className="text-base font-black text-stone-900 tabular-nums">{formatIDR(computedHpp)}</span>
           </div>
 
-          <div className="bg-white p-3 rounded-lg border border-stone-200/80">
-            <span className="text-[10px] font-semibold text-stone-500 block uppercase">Target Margin Profit</span>
+          <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 shadow-2xs">
+            <span className="text-[10px] font-bold text-stone-500 block uppercase">Target Margin Profit</span>
             <div className="flex items-center justify-center gap-1 mt-0.5">
               <input
                 type="number"
                 value={formMargin}
                 onChange={(e) => setFormMargin(parseFloat(e.target.value) || 0)}
-                className="w-16 px-1.5 py-0.5 border border-stone-300 rounded text-center text-xs font-bold focus:ring-2 focus:ring-[#543A14] outline-none"
+                className="w-16 px-1.5 py-0.5 border border-stone-300 rounded text-center text-xs font-bold focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
               />
               <span className="text-xs font-bold text-stone-700">%</span>
             </div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg border border-stone-200/80">
-            <span className="text-[10px] font-semibold text-stone-500 block uppercase">Rekomendasi Harga Jual</span>
-            <span className="text-base font-bold text-[#543A14]">{formatIDR(calculatedPrice)}</span>
+          <div className="bg-white p-3.5 rounded-xl border border-stone-200/80 shadow-2xs">
+            <span className="text-[10px] font-bold text-stone-500 block uppercase">Rekomendasi Harga Jual</span>
+            <span className="text-base font-black text-[#1A120B] tabular-nums">{formatIDR(calculatedPrice)}</span>
           </div>
         </div>
 
         <div>
-          <label className="text-xs font-semibold text-stone-700 block mb-1">
-            Override Harga Jual Manual (Rp) - Optional
+          <label className="text-xs font-bold text-stone-700 block mb-1">
+            Override Harga Jual Manual (Rp) — Opsional
           </label>
           <input
             type="text"
@@ -342,12 +340,10 @@ export const CalculatorView: React.FC<CalculatorViewProps> = ({
             value={formatCurrencyNumber(formManualPrice)}
             onChange={(e) => setFormManualPrice(e.target.value ? String(parseCurrencyNumber(e.target.value)) : "")}
             placeholder={`Biarkan kosong jika mengikuti rekomendasi (${formatIDR(calculatedPrice)})`}
-            className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#543A14] outline-none"
+            className="w-full px-3 py-2 border border-stone-300 rounded-xl text-xs font-semibold focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums bg-white"
           />
         </div>
       </div>
-
-
     </div>
   );
 };

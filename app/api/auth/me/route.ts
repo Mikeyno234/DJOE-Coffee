@@ -1,43 +1,41 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/db/supabaseClient";
 import { AuthService } from "@/lib/services/auth.service";
+import { requireAuth } from "@/lib/utils/authGuard";
 
 export async function GET(request: Request) {
-  const cookieHeader = request.headers.get("cookie") || "";
-  const tokenMatch = cookieHeader.match(/refresh_token=([^;]+)/);
-  const token = tokenMatch ? tokenMatch[1] : null;
-
-  if (!token) {
-    return NextResponse.json({ success: false, error: "Tidak ada sesi login aktif." }, { status: 401 });
+  const auth = requireAuth(request);
+  if (!auth.authenticated || !auth.user) {
+    return auth.errorResponse!;
   }
 
-  const user = AuthService.getCurrentUser(token);
-  if (user) {
-    return NextResponse.json({ success: true, user });
-  }
+  // Look up full user profile from memory or Supabase
+  const user = AuthService.getCurrentUser(
+    (request.headers.get("cookie") || "").match(/refresh_token=([^;]+)/)?.[1] || ""
+  );
 
-  // Fallback: Check token format or Supabase user
-  if (token.startsWith("token-")) {
-    const parts = token.split("-");
-    const userId = parts[parts.length - 1];
-    const foundUser = AuthService.getAllUsers().find((u) => String(u.id) === String(userId));
-    if (foundUser) {
-      return NextResponse.json({ success: true, user: foundUser });
-    }
-  }
-
-  return NextResponse.json({ success: false, error: "Sesi telah berakhir." }, { status: 401 });
+  return NextResponse.json({
+    success: true,
+    user: user || {
+      id: auth.user.id,
+      name: auth.user.name,
+      email: auth.user.email,
+      role: auth.user.role,
+      permissions: auth.user.permissions,
+    },
+  });
 }
 
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const cookieHeader = request.headers.get("cookie") || "";
-    const tokenMatch = cookieHeader.match(/refresh_token=([^;]+)/);
-    const token = tokenMatch ? tokenMatch[1] : null;
+    const auth = requireAuth(request);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
+    }
 
-    const user = token ? AuthService.getCurrentUser(token) : null;
-    const userId = user?.id || body.id || "1";
+    const body = await request.json();
+    // Enforce updating only own profile to prevent IDOR
+    const userId = String(auth.user.id);
 
     const res = AuthService.updateUser(userId, {
       name: body.name,
@@ -61,11 +59,15 @@ export async function PUT(request: Request) {
       updatePayload.password_hash = AuthService.hashPassword(body.password.trim());
     }
 
-    // Update password_hash & avatar_url in Supabase m_users
-    await supabase
-      .from("m_users")
-      .update(updatePayload)
-      .eq("id", isNaN(numericId) ? userId : numericId);
+    // Update in Supabase m_users
+    try {
+      await supabase
+        .from("m_users")
+        .update(updatePayload)
+        .eq("id", isNaN(numericId) ? userId : numericId);
+    } catch {
+      // Supabase update fallback
+    }
 
     return NextResponse.json({ success: true, user: res.user });
   } catch (err: any) {

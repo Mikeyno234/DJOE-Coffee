@@ -1,7 +1,7 @@
 "use client";
 
-import AppContainer from "@/app/components/AppContainer";
+import { PosScreen } from "./_components/PosScreen";
 
 export default function PosPage() {
-  return <AppContainer activeRoute="pos" />;
+  return <PosScreen />;
 }

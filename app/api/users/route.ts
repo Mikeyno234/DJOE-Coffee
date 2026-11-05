@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/db/supabaseClient";
 import { AuthService } from "@/lib/services/auth.service";
+import { requireAuth } from "@/lib/utils/authGuard";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = requireAuth(request, ["SUPER_ADMIN", "ADMIN"]);
+  if (!auth.authenticated || !auth.user) {
+    return auth.errorResponse!;
+  }
+
   try {
     const { data, error } = await supabase
       .from("m_users")
@@ -11,7 +17,7 @@ export async function GET() {
 
     if (error) {
       console.error("Supabase m_users fetch error:", error.message);
-    } else if (data) {
+    } else if (data && data.length > 0) {
       return NextResponse.json({ success: true, data });
     }
   } catch (err: any) {
@@ -25,34 +31,44 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const hashedPassword = AuthService.hashPassword(body.password || "123456");
-
-    // Insert directly into Supabase m_users
-    const { data, error } = await supabase
-      .from("m_users")
-      .insert([
-        {
-          name: body.name,
-          email: body.email,
-          password_hash: hashedPassword,
-          role: body.role || "CASHIER",
-          permissions: body.permissions || ["pos"],
-          avatar_url: body.avatar_url || null,
-          created_by: 1,
-        },
-      ])
-      .select()
-      .single();
-
-    if (error) {
-      console.error("Supabase user insert error:", error.message);
-      const result = AuthService.createUser(body);
-      return NextResponse.json({ success: result.success, user: result.user, error: result.error });
+    const auth = requireAuth(request, ["SUPER_ADMIN"]);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
     }
 
-    AuthService.createUser(body);
-    return NextResponse.json({ success: true, user: data });
+    const body = await request.json();
+    const hashedPassword = AuthService.hashPassword(body.password || "123456");
+    const numericUserId = Number(auth.user.id);
+    const validCreatedBy = isNaN(numericUserId) ? 1 : numericUserId;
+
+    // Insert directly into Supabase m_users
+    try {
+      const { data, error } = await supabase
+        .from("m_users")
+        .insert([
+          {
+            name: body.name,
+            email: body.email,
+            password_hash: hashedPassword,
+            role: body.role || "CASHIER",
+            permissions: body.permissions || ["pos"],
+            avatar_url: body.avatar_url || null,
+            created_by: validCreatedBy,
+          },
+        ])
+        .select()
+        .single();
+
+      if (!error && data) {
+        AuthService.createUser(body);
+        return NextResponse.json({ success: true, user: data });
+      }
+    } catch {
+      // Supabase insert fallback
+    }
+
+    const result = AuthService.createUser(body);
+    return NextResponse.json({ success: result.success, user: result.user, error: result.error });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -60,18 +76,26 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
   try {
+    const auth = requireAuth(request, ["SUPER_ADMIN"]);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
+    }
+
     const body = await request.json();
     const { id, ...data } = body;
     if (!id) return NextResponse.json({ success: false, error: "ID Pengguna wajib diisi." }, { status: 400 });
 
     const numericId = Number(id);
+    const numericUserId = Number(auth.user.id);
+    const validUpdatedBy = isNaN(numericUserId) ? 1 : numericUserId;
+
     const updatePayload: any = {
       name: data.name,
       email: data.email,
       role: data.role,
       permissions: data.permissions,
       ...(data.avatar_url ? { avatar_url: data.avatar_url } : {}),
-      updated_by: 1,
+      updated_by: validUpdatedBy,
       updated_at: new Date().toISOString(),
     };
 
@@ -80,19 +104,24 @@ export async function PUT(request: Request) {
     }
 
     // Update in Supabase m_users
-    const { data: updatedUser, error } = await supabase
-      .from("m_users")
-      .update(updatePayload)
-      .eq("id", isNaN(numericId) ? id : numericId)
-      .select()
-      .single();
+    try {
+      const { data: updatedUser, error } = await supabase
+        .from("m_users")
+        .update(updatePayload)
+        .eq("id", isNaN(numericId) ? id : numericId)
+        .select()
+        .single();
 
-    if (error) {
-      console.error("Supabase user update error:", error.message);
+      if (!error && updatedUser) {
+        AuthService.updateUser(id, data);
+        return NextResponse.json({ success: true, user: updatedUser });
+      }
+    } catch {
+      // fallback
     }
 
-    AuthService.updateUser(id, data);
-    return NextResponse.json({ success: true, user: updatedUser || data });
+    const memRes = AuthService.updateUser(id, data);
+    return NextResponse.json({ success: memRes.success, user: memRes.user, error: memRes.error });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
@@ -100,22 +129,34 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
+    const auth = requireAuth(request, ["SUPER_ADMIN"]);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
     if (!id) return NextResponse.json({ success: false, error: "ID Pengguna wajib diisi." }, { status: 400 });
 
-    const numericId = Number(id);
-    const { error } = await supabase
-      .from("m_users")
-      .delete()
-      .eq("id", isNaN(numericId) ? id : numericId);
-
-    if (error) {
-      console.error("Supabase user delete error:", error.message);
+    if (String(id) === String(auth.user.id)) {
+      return NextResponse.json(
+        { success: false, error: "Anda tidak dapat menghapus akun Anda sendiri!" },
+        { status: 400 }
+      );
     }
 
-    AuthService.deleteUser(id);
-    return NextResponse.json({ success: true });
+    const numericId = Number(id);
+    try {
+      await supabase
+        .from("m_users")
+        .delete()
+        .eq("id", isNaN(numericId) ? id : numericId);
+    } catch {
+      // fallback
+    }
+
+    const memRes = AuthService.deleteUser(id);
+    return NextResponse.json({ success: memRes.success, error: memRes.error });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }

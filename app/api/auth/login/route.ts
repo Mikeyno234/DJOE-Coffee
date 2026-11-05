@@ -7,7 +7,10 @@ export async function POST(request: Request) {
     const { email, password } = await request.json();
 
     if (!email || !password) {
-      return NextResponse.json({ success: false, error: "Email dan Kata Sandi wajib diisi." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Email dan Kata Sandi wajib diisi." },
+        { status: 400 }
+      );
     }
 
     const trimmedEmail = String(email).trim().toLowerCase();
@@ -39,13 +42,23 @@ export async function POST(request: Request) {
         passHash === trimmedPassword;
 
       if (!isValidPass) {
-        return NextResponse.json({ success: false, error: "Kata sandi yang Anda masukkan salah. Silakan coba lagi!" }, { status: 401 });
+        return NextResponse.json(
+          { success: false, error: "Kata sandi yang Anda masukkan salah. Silakan coba lagi." },
+          { status: 401 }
+        );
       }
 
       const { password_hash, ...userWithoutPassword } = foundUser;
-      const token = `token-${Date.now()}-${foundUser.id}`;
+      // Generate HMAC-SHA256 cryptographically signed token
+      const token = AuthService.signToken({
+        id: String(foundUser.id),
+        email: foundUser.email,
+        role: foundUser.role,
+        name: foundUser.name,
+        permissions: foundUser.permissions,
+      });
 
-      const response = NextResponse.json({ success: true, user: userWithoutPassword });
+      const response = NextResponse.json({ success: true, user: userWithoutPassword, token });
 
       response.cookies.set({
         name: "refresh_token",
@@ -53,7 +66,8 @@ export async function POST(request: Request) {
         httpOnly: true,
         path: "/",
         maxAge: 7 * 24 * 60 * 60,
-        sameSite: "strict",
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
       });
 
       return response;
@@ -61,20 +75,27 @@ export async function POST(request: Request) {
 
     // 2. If not found in Supabase, verify against memory users via AuthService
     const memResult = AuthService.login(trimmedEmail, trimmedPassword);
-    if (!memResult.success || !memResult.user) {
-      return NextResponse.json({ success: false, error: memResult.error || "Email atau kata sandi salah." }, { status: 401 });
+    if (!memResult.success || !memResult.user || !memResult.token) {
+      return NextResponse.json(
+        { success: false, error: memResult.error || "Email atau kata sandi tidak cocok." },
+        { status: 401 }
+      );
     }
 
-    const token = `token-${Date.now()}-${memResult.user.id}`;
-    const response = NextResponse.json({ success: true, user: memResult.user });
+    const response = NextResponse.json({
+      success: true,
+      user: memResult.user,
+      token: memResult.token,
+    });
 
     response.cookies.set({
       name: "refresh_token",
-      value: token,
+      value: memResult.token,
       httpOnly: true,
       path: "/",
       maxAge: 7 * 24 * 60 * 60,
-      sameSite: "strict",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     });
 
     return response;

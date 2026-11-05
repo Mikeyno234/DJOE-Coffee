@@ -154,10 +154,10 @@ export const CategoryManagementView: React.FC = () => {
       <div className="flex justify-end">
         <button
           onClick={handleOpenAddModal}
-          className="px-3.5 py-2 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] font-bold text-xs rounded-xl shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 active:scale-[0.98]"
+          className="px-3.5 py-2 bg-[#1A120B] hover:bg-[#2A1D13] text-white font-bold text-xs rounded-xl shadow-2xs cursor-pointer transition-all flex items-center gap-1.5 active:scale-[0.98]"
         >
-          <PlusIcon className="w-4 h-4 text-[#F0BB78]" />
-          <span>TAMBAH KATEGORI BARU</span>
+          <PlusIcon className="w-4 h-4 text-[#C89B3C]" />
+          <span>Tambah Kategori Baru</span>
         </button>
       </div>
 
@@ -236,8 +236,8 @@ export const CategoryManagementView: React.FC = () => {
 
       {/* Add / Edit Category Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1a0f07]/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-xl border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <h3 className="text-base font-bold text-stone-900">
                 {editingId ? "Edit Kategori Menu" : "Tambah Kategori Baru"}
@@ -245,6 +245,7 @@ export const CategoryManagementView: React.FC = () => {
               <button
                 onClick={() => setIsModalOpen(false)}
                 className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+                aria-label="Tutup modal"
               >
                 <XMarkIcon className="w-5 h-5" />
               </button>
@@ -252,7 +253,7 @@ export const CategoryManagementView: React.FC = () => {
 
             <form onSubmit={handleSaveCategory} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                <label className="block text-xs font-bold text-stone-700 mb-1.5">
                   Nama Kategori
                 </label>
                 <input
@@ -261,13 +262,13 @@ export const CategoryManagementView: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Contoh: Cold Brew"
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5">
                     Warna Background
                   </label>
                   <input
@@ -278,7 +279,7 @@ export const CategoryManagementView: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  <label className="block text-xs font-bold text-stone-700 mb-1.5">
                     Warna Teks
                   </label>
                   <input
@@ -296,9 +297,9 @@ export const CategoryManagementView: React.FC = () => {
                 </span>
                 <span
                   style={{ backgroundColor: bgColor, color: fgColor }}
-                  className="px-3 py-1 rounded-md text-xs font-bold inline-block"
+                  className="px-3 py-1 rounded-lg text-xs font-bold inline-block"
                 >
-                  {name || "Preview Nama Kategori"}
+                  {name || "Preview Kategori"}
                 </span>
               </div>
 
@@ -306,13 +307,13 @@ export const CategoryManagementView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold cursor-pointer transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold cursor-pointer transition-all active:scale-[0.98]"
+                  className="px-4 py-2.5 rounded-xl bg-[#1A120B] hover:bg-[#2A1D13] text-white text-xs font-bold cursor-pointer transition-all active:scale-[0.98]"
                 >
                   {editingId ? "Simpan Perubahan" : "Tambah Kategori"}
                 </button>

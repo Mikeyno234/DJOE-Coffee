@@ -10,12 +10,10 @@ import {
   ListBulletIcon,
   TagIcon,
   UserGroupIcon,
-  UserIcon,
   ArrowRightOnRectangleIcon,
-  ShieldCheckIcon,
-} from "@heroicons/react/24/solid";
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
 import { TabPermission } from "@/lib/models/user";
-
 
 interface SidebarNavProps {
   currentUser: {
@@ -26,10 +24,23 @@ interface SidebarNavProps {
     permissions: TabPermission[];
     avatar_url?: string;
   };
-
   activeTab?: TabPermission;
   setActiveTab?: (tab: TabPermission) => void;
   onLogout: () => void;
+}
+
+interface NavItem {
+  key: TabPermission;
+  href: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
+}
+
+interface NavGroup {
+  id: string;
+  title: string;
+  items: NavItem[];
 }
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({
@@ -45,17 +56,71 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     return currentUser.permissions.includes(tabKey);
   };
 
-  const navItems = [
-    { key: "pos" as TabPermission, href: "/pos", label: "Kasir POS", icon: ShoppingBagIcon, group: "POS" },
-    { key: "list" as TabPermission, href: "/menu", label: "Daftar Menu", icon: ListBulletIcon, group: "HPP" },
-    { key: "calc" as TabPermission, href: "/calculator", label: "Kalkulator HPP", icon: CalculatorIcon, group: "HPP" },
-    { key: "categories" as TabPermission, href: "/categories", label: "Kategori Produk", icon: TagIcon, group: "HPP" },
-    { key: "dash" as TabPermission, href: "/dashboard", label: "Laporan & Dashboard", icon: ChartBarIcon, group: "ANALYTICS" },
-    { key: "users" as TabPermission, href: "/users", label: "Manajemen User", icon: UserGroupIcon, group: "ANALYTICS" },
+  // Structured declarative navigation groups
+  const navGroups: NavGroup[] = [
+    {
+      id: "pos",
+      title: "Operasional Kasir",
+      items: [
+        {
+          key: "pos",
+          href: "/pos",
+          label: "Kasir POS",
+          icon: ShoppingBagIcon,
+          badge: "Utama",
+        },
+      ],
+    },
+    {
+      id: "catalog",
+      title: "Katalog & Resep",
+      items: [
+        {
+          key: "list",
+          href: "/menu",
+          label: "Daftar Menu",
+          icon: ListBulletIcon,
+        },
+        {
+          key: "calc",
+          href: "/calculator",
+          label: "Kalkulator HPP",
+          icon: CalculatorIcon,
+        },
+        {
+          key: "categories",
+          href: "/categories",
+          label: "Kategori Produk",
+          icon: TagIcon,
+        },
+      ],
+    },
+    {
+      id: "admin",
+      title: "Laporan & Manajemen",
+      items: [
+        {
+          key: "dash",
+          href: "/dashboard",
+          label: "Laporan & COGS",
+          icon: ChartBarIcon,
+        },
+        {
+          key: "users",
+          href: "/users",
+          label: "Kelola Pengguna",
+          icon: UserGroupIcon,
+        },
+      ],
+    },
   ];
 
+  // Flattened items for mobile navigation
+  const allPermittedItems = navGroups
+    .flatMap((group) => group.items)
+    .filter((item) => hasPermission(item.key));
 
-  const handleNavClick = (e: React.MouseEvent, item: typeof navItems[0]) => {
+  const handleNavClick = (e: React.MouseEvent, item: NavItem) => {
     if (setActiveTab) {
       e.preventDefault();
       if (typeof window !== "undefined") {
@@ -65,21 +130,39 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
     }
   };
 
+  const getRoleLabel = (role: string) => {
+    switch (role) {
+      case "SUPER_ADMIN":
+        return "Super Admin";
+      case "ADMIN":
+        return "Administrator";
+      case "CASHIER":
+        return "Kasir";
+      default:
+        return role;
+    }
+  };
+
   return (
     <>
-      <header className="no-print lg:hidden bg-[#543A14] text-white sticky top-0 z-40 border-b border-[#F0BB78]/20 px-4 py-2.5 flex items-center justify-between shadow-md">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-10 h-10 rounded-full bg-white p-0.5 border-2 border-[#F0BB78] shadow-md flex items-center justify-center shrink-0">
+      {/* Mobile Top Header */}
+      <header className="no-print lg:hidden bg-[#1A120B] text-white sticky top-0 z-40 border-b border-stone-800/90 px-4 py-2.5 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#2D1F15] p-1 border border-[#C89B3C]/30 flex items-center justify-center shrink-0">
             <img
               src="/images/Logo/logo.png"
               alt="DJOE COFFEE"
-              className="w-full h-full object-contain rounded-full"
+              className="w-full h-full object-contain rounded"
             />
           </div>
-
           <div>
-            <h1 className="font-black text-xs leading-none text-white tracking-wide">DJOE COFFEE</h1>
-            <span className="text-[9px] text-[#F0BB78] font-extrabold uppercase">{currentUser.role}</span>
+            <div className="flex items-center gap-1.5">
+              <h1 className="font-extrabold text-xs text-white tracking-wide">DJOE COFFEE</h1>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            </div>
+            <span className="text-[9px] text-[#C89B3C] font-semibold tracking-wider uppercase block">
+              {getRoleLabel(currentUser.role)}
+            </span>
           </div>
         </div>
 
@@ -94,21 +177,21 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 setActiveTab("profile");
               }
             }}
-            className="flex items-center gap-1.5 bg-[#3d2a0e] hover:bg-[#6e4b1b] px-2.5 py-1 rounded-xl text-[11px] font-bold cursor-pointer active:scale-95 transition-all text-white border border-amber-500/20"
+            className="flex items-center gap-1.5 bg-stone-900/90 hover:bg-stone-800 px-2.5 py-1.5 rounded-xl text-[11px] font-semibold cursor-pointer active:scale-95 transition-all text-stone-200 border border-stone-800"
             title="Profil Saya"
           >
-            <div className="w-4 h-4 rounded-full bg-[#F0BB78] text-[#543A14] flex items-center justify-center font-black text-[9px] overflow-hidden shrink-0">
+            <div className="w-5 h-5 rounded-full bg-[#C89B3C] text-[#1A120B] flex items-center justify-center font-bold text-[10px] overflow-hidden shrink-0">
               {currentUser.avatar_url ? (
                 <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
               ) : (
                 <span>{currentUser.name.charAt(0).toUpperCase()}</span>
               )}
             </div>
-            <span className="truncate max-w-[90px]">{currentUser.name.split(" ")[0]}</span>
+            <span className="truncate max-w-[80px]">{currentUser.name.split(" ")[0]}</span>
           </button>
           <button
             onClick={onLogout}
-            className="p-1.5 rounded-xl bg-rose-900/60 hover:bg-rose-800 text-rose-100 cursor-pointer"
+            className="p-1.5 rounded-xl bg-rose-950/50 hover:bg-rose-900/70 text-rose-300 border border-rose-900/40 cursor-pointer transition-colors"
             title="Keluar"
           >
             <ArrowRightOnRectangleIcon className="w-4 h-4" />
@@ -116,9 +199,9 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         </div>
       </header>
 
-      <div className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#543A14] border-t border-[#F0BB78]/30 flex items-center justify-around py-2 px-1 shadow-2xl backdrop-blur-md">
-        {navItems.map((item) => {
-          if (!hasPermission(item.key)) return null;
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="no-print lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#1A120B]/95 backdrop-blur-md border-t border-stone-800/90 flex items-center justify-around py-2 px-1 shadow-2xl">
+        {allPermittedItems.map((item) => {
           const Icon = item.icon;
           const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
           const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
@@ -128,146 +211,104 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               href={item.href}
               onClick={(e) => handleNavClick(e, item)}
               className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-xl transition-all cursor-pointer ${
-                isActive ? "text-[#F0BB78] font-black scale-105" : "text-amber-200/70 hover:text-white"
+                isActive ? "text-[#C89B3C] font-bold scale-105" : "text-stone-400 hover:text-stone-200"
               }`}
             >
-              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-[#F0BB78]" : "text-amber-300/80"}`} />
-              <span className="text-[9px] truncate max-w-[64px] font-bold">{item.label}</span>
+              <Icon className={`w-5 h-5 mb-0.5 ${isActive ? "text-[#C89B3C]" : "text-stone-400"}`} />
+              <span className="text-[9px] truncate max-w-[56px] tracking-tight">{item.label}</span>
             </Link>
           );
         })}
-      </div>
+      </nav>
 
-      <aside className="no-print hidden lg:flex bg-[#543A14] text-white w-64 flex-col justify-between z-40 border-r border-[#F0BB78]/20 h-screen sticky top-0 shadow-xl">
-        <div className="p-5 space-y-6 flex-1 overflow-y-auto">
-          <div className="flex flex-col items-center text-center pb-4 border-b border-amber-900/60 space-y-2">
-            <div className="w-20 h-20 rounded-full bg-white p-1.5 border-2 border-[#F0BB78] shadow-2xl flex items-center justify-center shrink-0 transform hover:scale-105 transition-transform duration-300">
+      {/* Desktop Sidebar Navigation */}
+      <aside className="no-print hidden lg:flex bg-[#1A120B] text-stone-200 w-64 flex-col justify-between z-40 border-r border-stone-800/80 h-screen sticky top-0 shadow-xl">
+        <div className="p-4 space-y-6 flex-1 overflow-y-auto">
+          {/* Modern Horizontal Brand Header */}
+          <div className="flex items-center gap-3 px-2 py-2.5 rounded-2xl bg-[#2D1F15]/40 border border-stone-800/60">
+            <div className="w-10 h-10 rounded-xl bg-white p-1 border border-[#C89B3C]/40 shadow-xs flex items-center justify-center shrink-0">
               <img
                 src="/images/Logo/logo.png"
                 alt="DJOE COFFEE"
-                className="w-full h-full object-contain rounded-full"
+                className="w-full h-full object-contain rounded-lg"
               />
             </div>
-            <div>
-              <h1 className="font-black text-lg leading-tight tracking-tight text-white flex items-center justify-center gap-1.5">
-                DJOE <span className="text-[#F0BB78]">COFFEE</span>
-              </h1>
-              <p className="text-[10px] text-amber-200/90 font-bold uppercase tracking-wider text-center mt-0.5">
-                HPP & Retail OS
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-extrabold text-sm tracking-tight text-white truncate">
+                  DJOE <span className="text-[#C89B3C]">COFFEE</span>
+                </h1>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" title="Sistem Online" />
+              </div>
+              <p className="text-[10px] text-stone-400 font-medium tracking-wide uppercase truncate mt-0.5">
+                POS & HPP Studio
               </p>
             </div>
           </div>
 
+          {/* Declarative Clean Navigation Groups */}
           <nav className="space-y-5">
-            {/* Group 1: Operasional Kasir */}
-            {(() => {
-              const items = navItems.filter((item) => item.group === "POS" && hasPermission(item.key));
-              if (items.length === 0) return null;
-              return (
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
-                    Operasional Kasir
-                  </p>
-                  <div className="space-y-1">
-                    {items.map((item) => {
-                      const Icon = item.icon;
-                      const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
-                      const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
-                      return (
-                        <Link
-                          key={item.key}
-                          href={item.href}
-                          onClick={(e) => handleNavClick(e, item)}
-                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
-                            isActive
-                              ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
-                              : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
-                          }`}
-                        >
-                          <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
-                          <span>{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
+            {navGroups.map((group) => {
+              const visibleItems = group.items.filter((item) => hasPermission(item.key));
+              if (visibleItems.length === 0) return null;
 
-            {/* Group 2: Katalog & HPP */}
-            {(() => {
-              const items = navItems.filter((item) => item.group === "HPP" && hasPermission(item.key));
-              if (items.length === 0) return null;
               return (
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
-                    Katalog & HPP
+                <div key={group.id} className="space-y-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-stone-500 px-3 select-none">
+                    {group.title}
                   </p>
-                  <div className="space-y-1">
-                    {items.map((item) => {
+                  <div className="space-y-0.5">
+                    {visibleItems.map((item) => {
                       const Icon = item.icon;
                       const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
                       const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
-                      return (
-                        <Link
-                          key={item.key}
-                          href={item.href}
-                          onClick={(e) => handleNavClick(e, item)}
-                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
-                            isActive
-                              ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
-                              : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
-                          }`}
-                        >
-                          <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
-                          <span>{item.label}</span>
-                        </Link>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })()}
 
-            {/* Group 3: Analisis & Pengaturan */}
-            {(() => {
-              const items = navItems.filter((item) => item.group === "ANALYTICS" && hasPermission(item.key));
-              if (items.length === 0) return null;
-              return (
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-wider text-amber-300/60 px-3 mb-1.5">
-                    Analisis & Pengaturan
-                  </p>
-                  <div className="space-y-1">
-                    {items.map((item) => {
-                      const Icon = item.icon;
-                      const currentPath = typeof window !== "undefined" ? window.location.pathname : pathname;
-                      const isActive = activeTab ? activeTab === item.key : currentPath === item.href;
                       return (
                         <Link
                           key={item.key}
                           href={item.href}
                           onClick={(e) => handleNavClick(e, item)}
-                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-extrabold transition-all duration-200 flex items-center gap-3 cursor-pointer ${
+                          className={`w-full px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-150 flex items-center justify-between cursor-pointer group ${
                             isActive
-                              ? "bg-[#F0BB78] text-[#543A14] shadow-md shadow-amber-900/30 font-bold"
-                              : "text-amber-100/90 hover:text-white hover:bg-[#6e4b1b]/70"
+                              ? "bg-[#C89B3C]/15 text-white border border-[#C89B3C]/30 shadow-xs"
+                              : "text-stone-400 hover:text-stone-100 hover:bg-stone-800/50 border border-transparent"
                           }`}
                         >
-                          <Icon className={`w-4 h-4 ${isActive ? "text-[#543A14]" : "text-amber-300"}`} />
-                          <span>{item.label}</span>
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <Icon
+                              className={`w-4 h-4 shrink-0 transition-colors ${
+                                isActive
+                                  ? "text-[#C89B3C]"
+                                  : "text-stone-500 group-hover:text-stone-300"
+                              }`}
+                            />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+
+                          {item.badge && (
+                            <span
+                              className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${
+                                isActive
+                                  ? "bg-[#C89B3C] text-[#1A120B]"
+                                  : "bg-stone-800 text-stone-400"
+                              }`}
+                            >
+                              {item.badge}
+                            </span>
+                          )}
                         </Link>
                       );
                     })}
                   </div>
                 </div>
               );
-            })()}
+            })}
           </nav>
         </div>
 
-        <div className="p-3 border-t border-amber-900/60 bg-[#3d2a0e]/40 shrink-0">
-          <div className="flex items-center justify-between gap-2 p-2 rounded-2xl hover:bg-white/10 transition-colors">
+        {/* User Profile & Session Footer */}
+        <div className="p-3 border-t border-stone-800/80 bg-stone-950/60 shrink-0">
+          <div className="flex items-center justify-between gap-2 p-1.5 rounded-xl bg-stone-900/40 border border-stone-800/40">
             <Link
               href={`/profile?id=${currentUser.id}`}
               onClick={(e) => {
@@ -280,32 +321,30 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 }
               }}
               className="flex items-center gap-2.5 min-w-0 flex-1 group cursor-pointer"
-              title="Buka Profil Saya"
+              title="Kelola Profil Akun"
             >
-              <div className="w-8 h-8 rounded-full bg-[#F0BB78] text-[#543A14] flex items-center justify-center font-black text-xs shrink-0 overflow-hidden shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-[#2D1F15] text-[#C89B3C] border border-[#C89B3C]/30 flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-xs">
                 {currentUser.avatar_url ? (
-                  <img
-                    src={currentUser.avatar_url}
-                    alt={currentUser.name}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={currentUser.avatar_url} alt={currentUser.name} className="w-full h-full object-cover" />
                 ) : (
                   <span>{currentUser.name.charAt(0).toUpperCase()}</span>
                 )}
               </div>
               <div className="min-w-0 flex-1 text-left">
-                <p className="text-xs font-bold text-white group-hover:text-[#F0BB78] transition-colors truncate leading-tight">
+                <p className="text-xs font-bold text-white group-hover:text-[#C89B3C] transition-colors truncate leading-tight">
                   {currentUser.name}
                 </p>
-                <p className="text-[10px] text-amber-200/70 font-medium truncate leading-tight mt-0.5">
-                  {currentUser.role === "SUPER_ADMIN" ? "Super Admin" : currentUser.role === "ADMIN" ? "Admin" : "Kasir"}
-                </p>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[10px] text-stone-400 font-medium truncate leading-tight">
+                    {getRoleLabel(currentUser.role)}
+                  </span>
+                </div>
               </div>
             </Link>
 
             <button
               onClick={onLogout}
-              className="p-2 rounded-xl text-amber-200/80 hover:text-white hover:bg-rose-900/50 transition-colors cursor-pointer shrink-0"
+              className="p-2 rounded-lg text-stone-400 hover:text-rose-300 hover:bg-rose-950/60 transition-colors cursor-pointer shrink-0 border border-transparent hover:border-rose-900/50"
               title="Keluar Sesi Akun"
             >
               <ArrowRightOnRectangleIcon className="w-4 h-4" />
@@ -313,11 +352,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
           </div>
         </div>
       </aside>
-
-
-
-
     </>
   );
 };
-

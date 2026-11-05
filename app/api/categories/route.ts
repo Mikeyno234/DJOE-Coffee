@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/db/supabaseClient";
+import { requireAuth } from "@/lib/utils/authGuard";
 
 // GET /api/categories - Fetch all categories from Supabase m_categories
 export async function GET() {
@@ -26,10 +27,15 @@ export async function GET() {
 // POST /api/categories - Create a new category in Supabase m_categories
 export async function POST(req: Request) {
   try {
+    const auth = requireAuth(req, ["SUPER_ADMIN", "ADMIN"]);
+    if (!auth.authenticated || !auth.user) {
+      return auth.errorResponse!;
+    }
+
     const body = await req.json();
     const { name, icon = "beaker", bg_color = "#e8d5be", fg_color = "#6b3a1f" } = body;
 
-    if (!name) {
+    if (!name || String(name).trim() === "") {
       return NextResponse.json(
         { success: false, error: "Nama kategori wajib diisi" },
         { status: 400 }
@@ -40,7 +46,7 @@ export async function POST(req: Request) {
       .from("m_categories")
       .insert([
         {
-          name,
+          name: String(name).trim(),
           icon,
           bg_color,
           fg_color,

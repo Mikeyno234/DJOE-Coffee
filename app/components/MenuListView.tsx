@@ -2,15 +2,14 @@
 
 import React, { useState } from "react";
 import { formatIDR, formatCurrencyNumber, parseCurrencyNumber } from "@/lib/utils/currency";
-
 import {
   BookOpenIcon,
-  DocumentChartBarIcon,
   PencilSquareIcon,
   TrashIcon,
   PlusIcon,
   XMarkIcon,
-} from "@heroicons/react/24/solid";
+  ShoppingBagIcon,
+} from "@heroicons/react/24/outline";
 import { ConfirmModal } from "./ConfirmModal";
 
 interface MenuListViewProps {
@@ -148,6 +147,7 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
       setSaving(false);
     }
   };
+
   const handleAddImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -241,28 +241,28 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
       <div className="flex flex-wrap justify-end gap-2">
         <button
           onClick={onPrintCatalogue}
-          className="px-3 py-2 bg-white hover:bg-stone-50 text-stone-800 text-xs font-semibold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-stone-300 shadow-2xs"
+          className="px-3.5 py-2 bg-white hover:bg-stone-50 text-stone-700 text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 border border-stone-200/80 shadow-2xs"
           title="Cetak Daftar Harga Pelanggan"
         >
-          <BookOpenIcon className="w-3.5 h-3.5 text-stone-600" />
+          <BookOpenIcon className="w-4 h-4 text-stone-500" />
           <span>Export Menu</span>
         </button>
 
         <button
           onClick={handleOpenAddModal}
-          className="px-3.5 py-2 bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
+          className="px-3.5 py-2 bg-[#1A120B] hover:bg-[#2A1D13] text-white text-xs font-bold rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-2xs active:scale-[0.98]"
         >
-          <PlusIcon className="w-4 h-4 text-[#F0BB78]" />
+          <PlusIcon className="w-4 h-4 text-[#C89B3C]" />
           <span>Tambah Menu Baru</span>
         </button>
       </div>
 
-      {/* Main Table Container*/}
-      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-xs overflow-hidden">
+      {/* Main Table Container */}
+      <div className="bg-white rounded-2xl border border-stone-200/70 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="bg-stone-50 border-b border-stone-200/80 text-stone-500 font-semibold uppercase tracking-wider">
+              <tr className="bg-stone-50 border-b border-stone-200/80 text-stone-500 font-bold uppercase tracking-wider">
                 <th className="p-3.5 pl-5">Nama Menu</th>
                 <th className="p-3.5">Kategori</th>
                 <th className="p-3.5 text-right">Modal (HPP)</th>
@@ -281,37 +281,41 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
                         <img
                           src={m.image_url}
                           alt={m.name}
-                          className="w-8 h-8 rounded-lg object-cover border border-stone-200 shrink-0"
+                          className="w-9 h-9 rounded-xl object-cover border border-stone-200 shrink-0"
+                          loading="lazy"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-lg bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 text-xs shrink-0 font-bold">
-                          ☕
+                        <div className="w-9 h-9 rounded-xl bg-stone-100 border border-stone-200 flex items-center justify-center text-stone-400 text-xs shrink-0">
+                          <ShoppingBagIcon className="w-4 h-4 text-stone-400" aria-hidden="true" />
                         </div>
                       )}
-                      <span className="font-semibold text-stone-900">{m.name}</span>
+                      <span className="font-bold text-stone-900">{m.name}</span>
                     </div>
                   </td>
                   <td className="p-3.5">
-                    <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[11px] font-medium border border-stone-200">
+                    <span className="px-2 py-0.5 rounded-lg bg-stone-100 text-stone-700 text-[11px] font-semibold border border-stone-200/60">
                       {m.category || m.category_name || "Minuman"}
                     </span>
                   </td>
-                  <td className="p-3.5 text-right text-stone-500">{formatIDR(m.hpp)}</td>
-                  <td className="p-3.5 text-right font-bold text-stone-900">{formatIDR(m.selling_price)}</td>
+                  <td className="p-3.5 text-right text-stone-500 tabular-nums">{formatIDR(m.hpp)}</td>
+                  <td className="p-3.5 text-right font-bold text-stone-900 tabular-nums">
+                    {formatIDR(m.selling_price)}
+                  </td>
                   <td className="p-3.5 text-center">
-                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 text-[11px] font-semibold border border-emerald-200">
+                    <span className="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-bold border border-emerald-200/70 tabular-nums">
                       +{m.margin_percent}%
                     </span>
                   </td>
-                  <td className="p-3.5 text-right font-bold text-emerald-700">
+                  <td className="p-3.5 text-right font-bold text-emerald-700 tabular-nums">
                     +{formatIDR(m.selling_price - m.hpp)}
                   </td>
                   <td className="p-3.5 pr-5 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
+                    <div className="flex items-center justify-center gap-1">
                       <button
                         onClick={() => handleOpenEdit(m)}
                         className="p-1.5 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
                         title="Edit Menu & Harga Jual"
+                        aria-label={`Edit menu ${m.name}`}
                       >
                         <PencilSquareIcon className="w-4 h-4" />
                       </button>
@@ -320,6 +324,7 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
                           onClick={() => handlePromptDelete(m)}
                           className="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors cursor-pointer"
                           title="Hapus Menu"
+                          aria-label={`Hapus menu ${m.name}`}
                         >
                           <TrashIcon className="w-4 h-4" />
                         </button>
@@ -333,15 +338,16 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
         </div>
       </div>
 
-      {/* Dedicated Edit Menu Pop-up Modal */}
+      {/* Edit Menu Pop-up Modal */}
       {editModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1a0f07]/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-xl border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <h3 className="text-base font-bold text-stone-900">Edit Menu & Harga Jual</h3>
               <button
                 onClick={() => setEditModalOpen(false)}
                 className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+                aria-label="Tutup modal"
               >
                 <XMarkIcon className="w-5 h-5" />
               </button>
@@ -349,22 +355,22 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
 
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Nama Menu</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Nama Menu</label>
                 <input
                   type="text"
                   required
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Kategori Menu</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Kategori Menu</label>
                 <select
                   value={editCategory}
                   onChange={(e) => setEditCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none bg-white"
                 >
                   {categoriesList.map((cat) => (
                     <option key={cat} value={cat}>
@@ -376,36 +382,35 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">HPP Modal (Rp)</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">HPP Modal (Rp)</label>
                   <input
                     type="text"
                     inputMode="numeric"
                     required
                     value={formatCurrencyNumber(editHpp)}
                     onChange={(e) => setEditHpp(parseCurrencyNumber(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Harga Jual (Rp)</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Harga Jual (Rp)</label>
                   <input
                     type="text"
                     inputMode="numeric"
                     required
                     value={formatCurrencyNumber(editSellingPrice)}
                     onChange={(e) => setEditSellingPrice(parseCurrencyNumber(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
                   />
                 </div>
               </div>
 
-
               {/* Photo upload field */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1.5">Foto Menu</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1.5">Foto Menu</label>
                 {editImageUrl && (
-                  <div className="mb-2 relative w-24 h-24 rounded-xl overflow-hidden border border-stone-200 shadow-2xs">
+                  <div className="mb-2 relative w-24 h-24 rounded-2xl overflow-hidden border border-stone-200 shadow-2xs">
                     <img
                       src={editImageUrl}
                       alt="Preview Foto Menu"
@@ -433,14 +438,14 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setEditModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold cursor-pointer transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={saving || uploading}
-                  className="px-4 py-2 rounded-xl bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl bg-[#1A120B] hover:bg-[#2A1D13] text-white text-xs font-bold cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {saving ? "Menyimpan..." : "Simpan Perubahan"}
                 </button>
@@ -450,15 +455,16 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
         </div>
       )}
 
-      {/* Dedicated Add New Menu Pop-up Modal */}
+      {/* Add New Menu Pop-up Modal */}
       {addModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1a0f07]/60 backdrop-blur-sm animate-fade-in overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-xs border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fade-in overflow-y-auto">
+          <div className="bg-white rounded-3xl shadow-xl border border-stone-200/80 max-w-md w-full p-6 animate-scale-in max-h-[90vh] overflow-y-auto my-auto space-y-5">
             <div className="flex items-center justify-between border-b border-stone-100 pb-3">
               <h3 className="text-base font-bold text-stone-900">Tambah Menu Baru</h3>
               <button
                 onClick={() => setAddModalOpen(false)}
                 className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+                aria-label="Tutup modal"
               >
                 <XMarkIcon className="w-5 h-5" />
               </button>
@@ -466,23 +472,23 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
 
             <form onSubmit={handleSaveAdd} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Nama Menu</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Nama Menu</label>
                 <input
                   type="text"
                   required
                   value={addName}
                   onChange={(e) => setAddName(e.target.value)}
                   placeholder="Contoh: Kopi Susu Gula Aren"
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">Kategori Menu</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1">Kategori Menu</label>
                 <select
                   value={addCategory}
                   onChange={(e) => setAddCategory(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none bg-white"
                 >
                   {categoriesList.map((cat) => (
                     <option key={cat} value={cat}>
@@ -494,35 +500,35 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">HPP Modal (Rp)</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">HPP Modal (Rp)</label>
                   <input
                     type="text"
                     inputMode="numeric"
                     required
                     value={formatCurrencyNumber(addHpp)}
                     onChange={(e) => setAddHpp(parseCurrencyNumber(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Harga Jual (Rp)</label>
+                  <label className="block text-xs font-bold text-stone-700 mb-1">Harga Jual (Rp)</label>
                   <input
                     type="text"
                     inputMode="numeric"
                     required
                     value={formatCurrencyNumber(addSellingPrice)}
                     onChange={(e) => setAddSellingPrice(parseCurrencyNumber(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#543A14] outline-none"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-stone-300 text-xs font-semibold text-stone-900 focus:ring-2 focus:ring-[#1A120B] outline-none tabular-nums"
                   />
                 </div>
               </div>
 
               {/* Photo upload field */}
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1.5">Foto Menu</label>
+                <label className="block text-xs font-bold text-stone-700 mb-1.5">Foto Menu</label>
                 {addImageUrl && (
-                  <div className="mb-2 relative w-24 h-24 rounded-xl overflow-hidden border border-stone-200 shadow-2xs">
+                  <div className="mb-2 relative w-24 h-24 rounded-2xl overflow-hidden border border-stone-200 shadow-2xs">
                     <img
                       src={addImageUrl}
                       alt="Preview Foto Menu"
@@ -550,14 +556,14 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setAddModalOpen(false)}
-                  className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold cursor-pointer transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold cursor-pointer transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={addSaving || addUploading}
-                  className="px-4 py-2 rounded-xl bg-[#543A14] hover:bg-[#3d2a0e] text-[#F0BB78] text-xs font-bold cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="px-4 py-2.5 rounded-xl bg-[#1A120B] hover:bg-[#2A1D13] text-white text-xs font-bold cursor-pointer transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {addSaving ? "Menyimpan..." : "Tambah Menu"}
                 </button>
@@ -567,7 +573,7 @@ export const MenuListView: React.FC<MenuListViewProps> = ({
         </div>
       )}
 
-      {/* Custom Delete Confirmation Modal */}
+      {/* Delete Confirmation Modal */}
       <ConfirmModal
         isOpen={deleteConfirmOpen}
         title="Konfirmasi Hapus Menu"
